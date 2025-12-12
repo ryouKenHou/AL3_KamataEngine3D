@@ -2,6 +2,8 @@
 #include "KamataEngine.h"
 
 class GameScene {
+private:
+	uint32_t textureHandle_ = 0;	
 public:
 	GameScene();
 	~GameScene();

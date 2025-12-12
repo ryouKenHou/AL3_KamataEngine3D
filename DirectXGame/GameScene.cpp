@@ -18,4 +18,13 @@ void GameScene::Initialize() {
 
 void GameScene::Update() {}
 
-void GameScene::Draw() {}
+void GameScene::Draw() {
+	// スプライト描画前処理
+	Sprite::PreDraw();
+
+	// スプライトの描画
+	sprite_->Draw();
+
+	// スプライトの描画後処理
+	Sprite::PostDraw();
+}

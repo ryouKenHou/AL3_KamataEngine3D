@@ -12,6 +12,12 @@ void GameScene::Initialize() {
 	// テクスチャの読み込み
 	textureHandle_ = TextureManager::Load("sample.png"); 
 
+	// サウンドの読み込み
+	soundHandle_ = Audio::GetInstance()->LoadWave("fanfare.wav");
+
+	// サウンドの再生
+	Audio::GetInstance()->PlayWave(soundHandle_, false, 1.0f);
+
 	// 3D モデルの生成
 	model_ = KamataEngine::Model::Create();
 

@@ -4,27 +4,34 @@ using namespace KamataEngine;
 
 GameScene::GameScene() {}
 GameScene::~GameScene() {
-	// スプライト解放
-	delete sprite_;
+
+	delete model_;
 }
 
 void GameScene::Initialize() { 
 	// テクスチャの読み込み
 	textureHandle_ = TextureManager::Load("sample.png"); 
 
-	// スプライトの生成
-	sprite_ = Sprite::Create(textureHandle_, {100.0f, 50.0f});
+	// 3D モデルの生成
+	model_ = KamataEngine::Model::Create();
+
+	// ワールドトランスフォームの初期化
+	worldTransform_.Initialize();
+
+	// カメラの初期化
+	camera_.Initialize();
 }
 
-void GameScene::Update() {}
+void GameScene::Update() {
+}
 
 void GameScene::Draw() {
-	// スプライト描画前処理
-	Sprite::PreDraw();
+	//  3Dモデル描画前処理
+	Model::PreDraw();
 
-	// スプライトの描画
-	sprite_->Draw();
+	// 3Dモデルの描画
+	model_->Draw(worldTransform_, camera_, textureHandle_);
 
-	// スプライトの描画後処理
-	Sprite::PostDraw();
+	//  3Dモデル描画後処理
+	Model::PostDraw();
 }

@@ -6,8 +6,14 @@ private:
 	// テクスチャハンドル
 	uint32_t textureHandle_ = 0;
 
-	// スプライト
-	KamataEngine::Sprite* sprite_ = nullptr;
+	// 3Dモデル
+	KamataEngine::Model* model_ = nullptr;
+
+	// ワールドトランスフォーム
+	KamataEngine::WorldTransform worldTransform_;
+
+	// カメラ
+	KamataEngine::Camera camera_;
 
 public:
 	GameScene();

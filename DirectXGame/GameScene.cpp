@@ -15,6 +15,9 @@ GameScene::~GameScene() {
 		}
 	}
 	blockWorldTransforms_.clear();
+
+	// デバッグカメラの解放
+	delete debugCamera_;
 }
 
 void GameScene::Initialize() {
@@ -39,7 +42,7 @@ void GameScene::Initialize() {
 	}
 
 	for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
-		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
+		for (uint32_t j = i % 2; j < kNumBlockHorizontal; j += 2) {
 			blockWorldTransforms_[i][j] = new WorldTransform();
 			blockWorldTransforms_[i][j]->Initialize();
 			blockWorldTransforms_[i][j]->translation_.x = kBlockWidth * j;
@@ -47,6 +50,9 @@ void GameScene::Initialize() {
 		}
 	}
 	blockModel_ = Model::Create();
+
+	//  デバッグカメラの生成と初期化
+	debugCamera_ = new DebugCamera(1280, 720);
 }
 
 void GameScene::Update() {
@@ -56,6 +62,9 @@ void GameScene::Update() {
 	// ブロックの更新
 	for (auto& row : blockWorldTransforms_) {
 		for (WorldTransform* transform : row) {
+			if (!transform) {
+				continue;
+			}
 			// アフィン変換行列の作成
 			transform->scale_ = {1.0f, 1.0f, 1.0f};
 			transform->rotation_ = {0.0f, 0.0f, 0.0f};
@@ -64,8 +73,25 @@ void GameScene::Update() {
 			// 定数バッファに転送する
 			transform->TransferMatrix();
 		}
-	}
+	}	
 
+#ifdef _DEBUG
+	if (Input::GetInstance()->TriggerKey(DIK_C)) {
+		isDebugCameraActive_ = !isDebugCameraActive_;
+	}
+#endif // _DEBUG
+
+	if (isDebugCameraActive_) {
+		// デバッグカメラ更新
+		debugCamera_->Update();
+		// カメラにデバッグカメラをセット
+		camera_.matView = debugCamera_->GetCamera().matView;
+		camera_.matProjection = debugCamera_->GetCamera().matProjection;
+		camera_.TransferMatrix();
+	} else {
+		// 通常カメラ更新
+		camera_.UpdateMatrix();
+	}
 }
 
 void GameScene::Draw() {
@@ -75,6 +101,9 @@ void GameScene::Draw() {
 	// ブロックの描画
 	for (auto& row : blockWorldTransforms_) {
 		for (WorldTransform* transform : row) {
+			if (!transform) {
+				continue;
+			}
 			blockModel_->Draw(*transform, camera_);
 		}
 	}

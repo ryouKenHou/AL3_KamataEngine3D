@@ -19,6 +19,11 @@ private:
 
 	// カメラ
 	KamataEngine::Camera camera_;
+
+	// デバッグカメラ
+	KamataEngine::DebugCamera* debugCamera_ = nullptr;
+	bool isDebugCameraActive_ = false;
+
 public:
 	GameScene();
 	~GameScene();

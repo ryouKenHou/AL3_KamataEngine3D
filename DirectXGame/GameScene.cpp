@@ -18,6 +18,9 @@ GameScene::~GameScene() {
 
 	// デバッグカメラの解放
 	delete debugCamera_;
+
+	// スカイドームの解放
+	delete skydome_;
 }
 
 void GameScene::Initialize() {
@@ -53,6 +56,12 @@ void GameScene::Initialize() {
 
 	//  デバッグカメラの生成と初期化
 	debugCamera_ = new DebugCamera(1280, 720);
+
+	// スカイドームの生成と初期化
+	skydomeModel_ = Model::CreateFromOBJ("SkyDome", true);
+	skydome_ = new Skydome();
+	skydome_->Initialize(skydomeModel_, &camera_);
+
 }
 
 void GameScene::Update() {
@@ -74,6 +83,9 @@ void GameScene::Update() {
 			transform->TransferMatrix();
 		}
 	}	
+
+	// スカイドームの更新
+	skydome_->Update();
 
 #ifdef _DEBUG
 	if (Input::GetInstance()->TriggerKey(DIK_C)) {
@@ -98,6 +110,9 @@ void GameScene::Draw() {
 	//  3Dモデル描画前処理
 	Model::PreDraw();
 
+	// スカイドームの描画
+	skydome_->Draw();
+
 	// ブロックの描画
 	for (auto& row : blockWorldTransforms_) {
 		for (WorldTransform* transform : row) {
@@ -109,6 +124,8 @@ void GameScene::Draw() {
 	}
 	// プレイヤーの描画
 	// player_->Draw();
+
+	
 
 	//  3Dモデル描画後処理
 	Model::PostDraw();

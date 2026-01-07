@@ -2,6 +2,12 @@
 
 using namespace KamataEngine;
 
+Player::Player() {}
+Player::~Player() {
+	// 解放処理
+	delete model_;
+}
+
 void Player::Initialize(Model* model, uint32_t textureHandle, Camera* camera) {
 	assert(model);
 	assert(camera);

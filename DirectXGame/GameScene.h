@@ -2,6 +2,7 @@
 #include "KamataEngine.h"
 #include "Player.h"
 #include "Skydome.h"
+#include "MapChipField.h"
 #include "vector"
 #include "helper.hpp"
 
@@ -29,6 +30,9 @@ private:
 	Skydome* skydome_ = nullptr;
 	KamataEngine::Model* skydomeModel_ = nullptr;
 
+	// マップチップフィールド
+	MapChipField* mapChipField_;
+
 public:
 	GameScene();
 	~GameScene();
@@ -41,4 +45,6 @@ public:
 
 	// 描画
 	void Draw();
+
+	void GenerateBlocks();
 };

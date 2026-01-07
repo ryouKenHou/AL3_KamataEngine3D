@@ -21,6 +21,9 @@ GameScene::~GameScene() {
 
 	// スカイドームの解放
 	delete skydome_;
+
+	// マップチップフィールドの解放
+	delete mapChipField_;
 }
 
 void GameScene::Initialize() {
@@ -29,39 +32,25 @@ void GameScene::Initialize() {
 
 	// プレイヤーの生成と初期化
 	player_ = new Player();
-	playerModel_ = Model::Create();
+	playerModel_ = Model::CreateFromOBJ("player", true);
 	playerTextureHandle_ = TextureManager::Load("uvChecker.png");
 	player_->Initialize(playerModel_, playerTextureHandle_, &camera_);
 
+	// マップチップフィールドの生成と初期化
+	mapChipField_ = new MapChipField();
+	mapChipField_->LoadMapChipCsv("Resources/Blocks.csv");
+
 	// ブロックモデルの生成と初期化
-	const uint32_t kNumBlockHorizontal = 20;
-	const uint32_t kNumBlockVertical = 10;
-	const float kBlockWidth = 2.0f;
-	const float kBlockHeight = 2.0f;
-
-	blockWorldTransforms_.resize(kNumBlockVertical);
-	for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
-		blockWorldTransforms_[i].resize(kNumBlockHorizontal);
-	}
-
-	for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
-		for (uint32_t j = i % 2; j < kNumBlockHorizontal; j += 2) {
-			blockWorldTransforms_[i][j] = new WorldTransform();
-			blockWorldTransforms_[i][j]->Initialize();
-			blockWorldTransforms_[i][j]->translation_.x = kBlockWidth * j;
-			blockWorldTransforms_[i][j]->translation_.y = kBlockHeight * i;
-		}
-	}
-	blockModel_ = Model::Create();
+	blockModel_ = Model::CreateFromOBJ("block", true);
+	GenerateBlocks();
 
 	//  デバッグカメラの生成と初期化
 	debugCamera_ = new DebugCamera(1280, 720);
 
 	// スカイドームの生成と初期化
-	skydomeModel_ = Model::CreateFromOBJ("SkyDome", true);
+	skydomeModel_ = Model::CreateFromOBJ("skyDome", true);
 	skydome_ = new Skydome();
 	skydome_->Initialize(skydomeModel_, &camera_);
-
 }
 
 void GameScene::Update() {
@@ -82,7 +71,7 @@ void GameScene::Update() {
 			// 定数バッファに転送する
 			transform->TransferMatrix();
 		}
-	}	
+	}
 
 	// スカイドームの更新
 	skydome_->Update();
@@ -122,11 +111,31 @@ void GameScene::Draw() {
 			blockModel_->Draw(*transform, camera_);
 		}
 	}
-	// プレイヤーの描画
-	// player_->Draw();
 
-	
+	// プレイヤーの描画
+	player_->Draw();
 
 	//  3Dモデル描画後処理
 	Model::PostDraw();
+}
+
+void GameScene::GenerateBlocks() {
+	const uint32_t kNumBlockHorizontal = mapChipField_->GetNumBlockHorizontal();
+	const uint32_t kNumBlockVertical = mapChipField_->GetNumBlockVirtical();
+
+	blockWorldTransforms_.resize(kNumBlockVertical);
+	for (uint32_t i = 0; i < kNumBlockVertical; ++i) {
+		blockWorldTransforms_[i].resize(kNumBlockHorizontal);
+	}
+
+	for (uint32_t y = 0; y < kNumBlockVertical; ++y) {
+		for (uint32_t x = 0; x < kNumBlockHorizontal; ++x) {
+			if (mapChipField_->GetMapChipTypeByIndex(x, y) == MapChipType::kBlock) {
+				WorldTransform* transform = new WorldTransform();
+				transform->Initialize();
+				blockWorldTransforms_[y][x] = transform;
+				blockWorldTransforms_[y][x]->translation_ = mapChipField_->GetMapChipPositionByIndex(x, y);
+			}
+		}
+	}
 }

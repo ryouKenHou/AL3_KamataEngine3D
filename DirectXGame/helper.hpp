@@ -27,7 +27,7 @@ inline KamataEngine::Matrix4x4 CreateAffineMatrix(const KamataEngine::Vector3& s
 	KamataEngine::Matrix4x4 translationMatrix = KamataEngine::MathUtility::MakeTranslateMatrix(translation);
 
 	// アフィン変換行列の合成
-	result = translationMatrix * rotationMatrixZ * rotationMatrixY * rotationMatrix * scaleMatrix;
+	result = scaleMatrix * rotationMatrixZ * rotationMatrixY * rotationMatrix * translationMatrix;
 
 	return result;
 }

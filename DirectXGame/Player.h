@@ -13,6 +13,9 @@ private:
 	KamataEngine::Camera* camera_ = nullptr;
 
 public:
+	Player();
+	~Player();
+
 	void Initialize(KamataEngine::Model* model, uint32_t textureHandle, KamataEngine::Camera* camera);
 
 	void Update();

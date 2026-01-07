@@ -1,14 +1,21 @@
 #pragma once
 #include "KamataEngine.h"
 #include "Player.h"
+#include "vector"
+#include "helper.hpp"
 
 class GameScene {
 private:
-	// テクスチャハンドル
-	uint32_t textureHandle_ = 0;
-
 	// プレイヤー
 	Player* player_ = nullptr;
+	KamataEngine::Model* playerModel_ = nullptr;
+	KamataEngine::WorldTransform playerWorldTransform_;
+	uint32_t playerTextureHandle_ = 0;
+
+	// ブロックのモデル
+	KamataEngine::Model* blockModel_ = nullptr;
+	std::vector<std::vector<KamataEngine::WorldTransform*>> blockWorldTransforms_;
+	uint32_t blockTextureHandle_ = 0;
 
 	// カメラ
 	KamataEngine::Camera camera_;

@@ -1,19 +1,14 @@
 #pragma once
 #include "KamataEngine.h"
+#include "Player.h"
 
 class GameScene {
 private:
 	// テクスチャハンドル
 	uint32_t textureHandle_ = 0;
 
-	// サウンドハンドル
-	uint32_t soundHandle_ = 0;
-
-	// 3Dモデル
-	KamataEngine::Model* model_ = nullptr;
-
-	// ワールドトランスフォーム
-	KamataEngine::WorldTransform worldTransform_;
+	// プレイヤー
+	Player* player_ = nullptr;
 
 	// カメラ
 	KamataEngine::Camera camera_;

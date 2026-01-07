@@ -13,6 +13,16 @@ inline KamataEngine::Matrix4x4 operator*(const KamataEngine::Matrix4x4& m1, cons
 	return result;
 }
 
+inline KamataEngine::Vector3 operator+(const KamataEngine::Vector3& v1, const KamataEngine::Vector3& v2) {
+	return {v1.x + v2.x, v1.y + v2.y, v1.z + v2.z}; }
+
+inline KamataEngine::Vector3 operator+=(KamataEngine::Vector3& v1, const KamataEngine::Vector3& v2) {
+	v1.x += v2.x;
+	v1.y += v2.y;
+	v1.z += v2.z;
+	return v1;
+}
+
 inline KamataEngine::Matrix4x4 CreateAffineMatrix(const KamataEngine::Vector3& scale, const KamataEngine::Vector3& rotation, const KamataEngine::Vector3& translation) {
 	KamataEngine::Matrix4x4 result;
 	// スケーリング行列

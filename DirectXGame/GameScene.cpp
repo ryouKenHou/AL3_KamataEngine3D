@@ -33,8 +33,8 @@ void GameScene::Initialize() {
 	// プレイヤーの生成と初期化
 	player_ = new Player();
 	playerModel_ = Model::CreateFromOBJ("player", true);
-	playerTextureHandle_ = TextureManager::Load("uvChecker.png");
-	player_->Initialize(playerModel_, playerTextureHandle_, &camera_);
+	Vector3 playerStartPosition = mapChipField_->GetMapChipPositionByIndex(1,1);
+	player_->Initialize(playerModel_, &camera_, playerStartPosition);
 
 	// マップチップフィールドの生成と初期化
 	mapChipField_ = new MapChipField();

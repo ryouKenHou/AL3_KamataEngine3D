@@ -27,18 +27,27 @@ GameScene::~GameScene() {
 }
 
 void GameScene::Initialize() {
-	// カメラの初期化
-	camera_.Initialize();
+	// カメラコントローラーの生成
+	cameraController_ = new CameraController();
+	cameraController_->Initialize();
 
 	// プレイヤーの生成と初期化
 	player_ = new Player();
 	playerModel_ = Model::CreateFromOBJ("player", true);
-	playerTextureHandle_ = TextureManager::Load("uvChecker.png");
-	player_->Initialize(playerModel_, playerTextureHandle_, &camera_);
+	Vector3 playerStartPosition = mapChipField_->GetMapChipPositionByIndex(1,1);
+	player_->Initialize(playerModel_, cameraController_->GetCamera(), playerStartPosition);
+	cameraController_->SetTarget(player_);
+	cameraController_->Reset();
 
 	// マップチップフィールドの生成と初期化
 	mapChipField_ = new MapChipField();
 	mapChipField_->LoadMapChipCsv("Resources/Blocks.csv");
+	Rect CameraMovableArea = {
+		11.0f,
+		MapChipField::GetNumBlockHorizontal() * mapChipField_->GetBlockWidth(),
+		6.0f,
+		MapChipField::GetNumBlockVirtical() * mapChipField_->GetBlockHeight()};
+	cameraController_->SetMovableArea(CameraMovableArea);
 
 	// ブロックモデルの生成と初期化
 	blockModel_ = Model::CreateFromOBJ("block", true);
@@ -50,12 +59,15 @@ void GameScene::Initialize() {
 	// スカイドームの生成と初期化
 	skydomeModel_ = Model::CreateFromOBJ("skyDome", true);
 	skydome_ = new Skydome();
-	skydome_->Initialize(skydomeModel_, &camera_);
+	skydome_->Initialize(skydomeModel_, cameraController_->GetCamera());
 }
 
 void GameScene::Update() {
 	// プレイヤーの更新
 	player_->Update();
+
+	// カメラコントローラーの更新
+	cameraController_->Update();
 
 	// ブロックの更新
 	for (auto& row : blockWorldTransforms_) {
@@ -86,12 +98,12 @@ void GameScene::Update() {
 		// デバッグカメラ更新
 		debugCamera_->Update();
 		// カメラにデバッグカメラをセット
-		camera_.matView = debugCamera_->GetCamera().matView;
-		camera_.matProjection = debugCamera_->GetCamera().matProjection;
-		camera_.TransferMatrix();
+		cameraController_->GetCamera()->matView = debugCamera_->GetCamera().matView;
+		cameraController_->GetCamera()->matProjection = debugCamera_->GetCamera().matProjection;
+		cameraController_->GetCamera()->TransferMatrix();
 	} else {
 		// 通常カメラ更新
-		camera_.UpdateMatrix();
+		cameraController_->GetCamera()->UpdateMatrix();
 	}
 }
 
@@ -108,7 +120,7 @@ void GameScene::Draw() {
 			if (!transform) {
 				continue;
 			}
-			blockModel_->Draw(*transform, camera_);
+			blockModel_->Draw(*transform, *cameraController_->GetCamera());
 		}
 	}
 

@@ -13,6 +13,27 @@ inline KamataEngine::Matrix4x4 operator*(const KamataEngine::Matrix4x4& m1, cons
 	return result;
 }
 
+inline KamataEngine::Vector3 operator+(const KamataEngine::Vector3& v1, const KamataEngine::Vector3& v2) {
+	return {v1.x + v2.x, v1.y + v2.y, v1.z + v2.z}; }
+
+inline KamataEngine::Vector3 operator+=(KamataEngine::Vector3& v1, const KamataEngine::Vector3& v2) {
+	v1.x += v2.x;
+	v1.y += v2.y;
+	v1.z += v2.z;
+	return v1;
+}
+
+inline KamataEngine::Vector3 operator*(const KamataEngine::Vector3& v, float scalar) {
+	return {v.x * scalar, v.y * scalar, v.z * scalar}; }
+
+inline KamataEngine::Vector3 Lerp(const KamataEngine::Vector3& start, const KamataEngine::Vector3& end, float t) {
+	return {
+		start.x + (end.x - start.x) * t,
+		start.y + (end.y - start.y) * t,
+		start.z + (end.z - start.z) * t
+	};
+}
+
 inline KamataEngine::Matrix4x4 CreateAffineMatrix(const KamataEngine::Vector3& scale, const KamataEngine::Vector3& rotation, const KamataEngine::Vector3& translation) {
 	KamataEngine::Matrix4x4 result;
 	// スケーリング行列

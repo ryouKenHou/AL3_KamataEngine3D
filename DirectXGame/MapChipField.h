@@ -1,10 +1,8 @@
 #pragma once
 
 #include "KamataEngine.h"
-#include <vector>
 #include <map>
-
-
+#include <vector>
 
 enum class MapChipType {
 	kBlank,
@@ -16,6 +14,19 @@ struct MapChipData {
 };
 
 class MapChipField {
+public:
+	struct IndexSet {
+		uint32_t xIndex;
+		uint32_t yIndex;
+	};
+
+	struct Rect {
+		float left;
+		float right;
+		float bottom;
+		float top;
+	};
+
 private:
 	static inline const float kBlockWidth = 1.0f;
 	static inline const float kBlockHeight = 1.0f;
@@ -26,8 +37,6 @@ private:
 	MapChipData mapChipData;
 
 public:
-	
-
 	MapChipField();
 	~MapChipField();
 
@@ -39,12 +48,12 @@ public:
 
 	KamataEngine::Vector3 GetMapChipPositionByIndex(uint32_t xIndex, uint32_t yIndex);
 
+	MapChipField::IndexSet GetMapChipIndexByPosition(const KamataEngine::Vector3& position);
+
+	Rect GetRectByIndex(uint32_t xIndex, uint32_t yIndex);
 
 	float GetBlockWidth() const { return kBlockWidth; }
 	float GetBlockHeight() const { return kBlockHeight; }
 	static uint32_t GetNumBlockHorizontal() { return kNumBlockHorizontal; }
 	static uint32_t GetNumBlockVirtical() { return kNumBlockVirtical; }
-
-
 };
-

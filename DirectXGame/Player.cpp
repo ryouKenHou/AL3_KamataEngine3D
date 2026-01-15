@@ -1,7 +1,9 @@
 #include "Player.h"
 #include "helper.hpp"
+#include "MapChipField.h"
 #include <numbers>
 #include <algorithm>
+#include <array>
 
 using namespace KamataEngine;
 
@@ -32,13 +34,10 @@ void Player::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera
 	camera_ = camera;
 }
 
-void Player::Update() {
+void Player::MoveInput() {
 	// 移動入力
 	if (onGround_) {
-		
-
 		if (Input::GetInstance()->PushKey(DIK_RIGHT) || Input::GetInstance()->PushKey(DIK_LEFT) || Input::GetInstance()->PushKey(DIK_UP)) {
-
 			// 左右移動
 			Vector3 acceleration = {0.0f, 0.0f, 0.0f};
 			if (Input::GetInstance()->PushKey(DIK_RIGHT)) {
@@ -61,7 +60,7 @@ void Player::Update() {
 					turnFirstRotationY_ = worldTransform_.rotation_.y;
 					turnTimer_ = kTimeTurn;
 				}
-			}		
+			}
 
 			if (Input::GetInstance()->PushKey(DIK_UP)) {
 				velocity_ += Vector3(0, kJumpAcceleration, 0);
@@ -79,6 +78,102 @@ void Player::Update() {
 		velocity_.y = max(velocity_.y, -kLimitFallSpeed);
 	}
 
+	
+}
+
+KamataEngine::Vector3 Player::CornerPosition(const KamataEngine::Vector3& center, Corner corner) {
+	KamataEngine::Vector3 offsetTable[kNumCorner] = {
+		{+kWidth / 2.f, 0.f, -kHeight / 2.f},   // kRightBottom
+		{-kWidth / 2.f, 0.f, -kHeight / 2.f},  // kLeftBottom
+		{+kWidth / 2.f, 0.f, +kHeight / 2.f},    // kRightTop
+		{-kWidth / 2.f, 0.f, +kHeight / 2.f}    // kLeftTop
+	};
+	return KamataEngine::Vector3{
+		center.x + offsetTable[static_cast<uint32_t>(corner)].x,
+		center.y + offsetTable[static_cast<uint32_t>(corner)].y,
+		center.z + offsetTable[static_cast<uint32_t>(corner)].z
+	};
+}
+
+void Player::MapCollsionUp(CollisionMapInfo* info) { 
+	std::array<Vector3, kNumCorner> positionsNew;
+
+	for (uint32_t i = 0; i < positionsNew.size(); ++i) {
+		positionsNew[i] = CornerPosition(worldTransform_.translation_ + info->moveValue, static_cast<Corner>(i));
+	}
+
+	if (info->moveValue.y <= 0) {
+		return;
+	}
+	
+	MapChipType mapchipType;
+	bool hit = false;
+
+	// 左上
+	MapChipField::IndexSet indexSet;
+	indexSet = mapChipField_->GetMapChipIndexByPosition(positionsNew[kRightTop]);
+	DebugText::GetInstance()->ConsolePrintf("RightTop Index X:%d Y:%d\n", indexSet.xIndex, indexSet.yIndex);
+	mapchipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
+	if (mapchipType == MapChipType::kBlock) {
+		hit = true;
+	}
+
+	// 右上
+	indexSet = mapChipField_->GetMapChipIndexByPosition(positionsNew[kLeftTop]);
+	mapchipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
+	if (mapchipType == MapChipType::kBlock) {
+		hit = true;
+	}
+
+	if (hit) {
+		indexSet = mapChipField_->GetMapChipIndexByPosition(positionsNew[kRightTop]);
+		MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
+		float playerMoveY = rect.bottom - (worldTransform_.translation_.y) - (kHeight / 2.f + 0.1f); 
+		info->moveValue.y = playerMoveY;
+		info->ceilingCollided = true;
+
+	}
+
+}
+
+void Player::MoveAfterMapCollsionCheck(const CollisionMapInfo& info) { 
+	worldTransform_.translation_ += info.moveValue; 
+}
+
+void Player::OnCeilingCollided(const CollisionMapInfo& info) {
+	if (info.ceilingCollided) {
+		DebugText::GetInstance()->ConsolePrintf("Ceiling Collided\n");
+		velocity_.y = 0.f;
+	}
+}
+
+void Player::MapCollsionDown(CollisionMapInfo* info) { (void)info; }
+void Player::MapCollsionLeft(CollisionMapInfo* info) { (void)info; }
+void Player::MapCollsionRight(CollisionMapInfo* info) { (void)info; }
+
+void Player::MapCollision(CollisionMapInfo* info) {
+	MapCollsionUp(info);
+	MapCollsionDown(info);
+	MapCollsionLeft(info);
+	MapCollsionRight(info);
+}
+
+void Player::Update() {
+	// 入力処理
+	MoveInput();	
+
+	// マップチップとの当たり判定
+	CollisionMapInfo collisionInfo;
+	collisionInfo.moveValue = velocity_;
+	MapCollision(&collisionInfo);
+
+	// 移動処理
+	MoveAfterMapCollsionCheck(collisionInfo);	
+
+	// 天井衝突時の処理
+	OnCeilingCollided(collisionInfo);
+
+	// 着地判定
 	bool landing = false;
 
 	if (velocity_.y < 0.f) {
@@ -113,10 +208,7 @@ void Player::Update() {
 
 		float t = (kTimeTurn - turnTimer_) / kTimeTurn;
 		worldTransform_.rotation_.y = turnFirstRotationY_ + (destinationRotationY - turnFirstRotationY_) * t;
-	}
-	
-	// 移動処理
-	worldTransform_.translation_ += velocity_;
+	}	
 
 	// ワールドトランスフォームの更新
 	worldTransform_.matWorld_ = CreateAffineMatrix(worldTransform_.scale_, worldTransform_.rotation_, worldTransform_.translation_);

@@ -83,14 +83,14 @@ void Player::MoveInput() {
 
 KamataEngine::Vector3 Player::CornerPosition(const KamataEngine::Vector3& center, Corner corner) {
 	KamataEngine::Vector3 offsetTable[kNumCorner] = {
-		{+kWidth / 2.f, 0.f, -kHeight / 2.f},   // kRightBottom
-		{-kWidth / 2.f, 0.f, -kHeight / 2.f},  // kLeftBottom
-		{+kWidth / 2.f, 0.f, +kHeight / 2.f},    // kRightTop
-		{-kWidth / 2.f, 0.f, +kHeight / 2.f}    // kLeftTop
+	    {+kWidth / 2.f, -kHeight / 2.f, 0.f}, // kRightBottom
+	    {-kWidth / 2.f, -kHeight / 2.f, 0.f}, // kLeftBottom
+	    {+kWidth / 2.f, +kHeight / 2.f, 0.f}, // kRightTop
+	    {-kWidth / 2.f, +kHeight / 2.f, 0.f}  // kLeftTop
 	};
 	return KamataEngine::Vector3{
-		center.x + offsetTable[static_cast<uint32_t>(corner)].x,
-		center.y + offsetTable[static_cast<uint32_t>(corner)].y,
+	    center.x + offsetTable[static_cast<uint32_t>(corner)].x, 
+		center.y + offsetTable[static_cast<uint32_t>(corner)].y, 
 		center.z + offsetTable[static_cast<uint32_t>(corner)].z
 	};
 }

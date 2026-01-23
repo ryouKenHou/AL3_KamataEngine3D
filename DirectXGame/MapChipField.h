@@ -56,4 +56,8 @@ public:
 	float GetBlockHeight() const { return kBlockHeight; }
 	static uint32_t GetNumBlockHorizontal() { return kNumBlockHorizontal; }
 	static uint32_t GetNumBlockVirtical() { return kNumBlockVirtical; }
+
+	// operator == and != for IndexSet
+	friend bool operator==(const IndexSet& lhs, const IndexSet& rhs) { return lhs.xIndex == rhs.xIndex && lhs.yIndex == rhs.yIndex; }
+	friend bool operator!=(const IndexSet& lhs, const IndexSet& rhs) { return !(lhs == rhs); }
 };

@@ -39,6 +39,8 @@ private:
 
 	static inline const float kAcceleration = 0.01f;
 	static inline const float kAttenuation = 0.2f;
+	static inline const float kAttenuationLanding = 0.2f;
+	static inline const float kAttenuationWall = 0.3f;
 	static inline const float kLimitRunSpeed = 0.2f;
 	static inline const float kTimeTurn = 0.3f;
 	static inline const float kGravityAcceleration = 0.02f;
@@ -65,13 +67,15 @@ public:
 	KamataEngine::Vector3 CornerPosition(const KamataEngine::Vector3& center, Corner corner);
 
 	void MapCollision(CollisionMapInfo* info);
-	void MapCollsionUp(CollisionMapInfo* info);
-	void MapCollsionDown(CollisionMapInfo* info);
-	void MapCollsionLeft(CollisionMapInfo* info);
-	void MapCollsionRight(CollisionMapInfo* info);
+	void MapCollisionUp(CollisionMapInfo* info);
+	void MapCollisionDown(CollisionMapInfo* info);
+	void MapCollisionLeft(CollisionMapInfo* info);
+	void MapCollisionRight(CollisionMapInfo* info);
 
-	void MoveAfterMapCollsionCheck(const CollisionMapInfo& info);
+	void MoveAfterMapCollisionCheck(const CollisionMapInfo& info);
 	void OnCeilingCollided(const CollisionMapInfo& info);
+	void OnGroundCollided(const CollisionMapInfo& info);
+	void OnWallCollided(const CollisionMapInfo& info);
 
 	void Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera, const KamataEngine::Vector3& position);
 

@@ -1,11 +1,6 @@
 #pragma once
 #include "KamataEngine.h"
-
-
-enum class LRDirection {
-	kRight, 
-	kLeft,	
-};
+#include "helper.hpp"
 
 enum Corner {
 	kRightBottom,

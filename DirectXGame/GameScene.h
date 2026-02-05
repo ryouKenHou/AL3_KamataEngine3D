@@ -1,6 +1,7 @@
 #pragma once
 #include "KamataEngine.h"
 #include "Player.h"
+#include "Enemy.h"
 #include "Skydome.h"
 #include "MapChipField.h"
 #include "vector"
@@ -17,6 +18,10 @@ private:
 	// ブロックのモデル
 	KamataEngine::Model* blockModel_ = nullptr;
 	std::vector<std::vector<KamataEngine::WorldTransform*>> blockWorldTransforms_;
+
+	// 敵キャラクター
+	Enemy* enemy_ = nullptr;
+	KamataEngine::Model* enemyModel_ = nullptr;
 
 	// カメラ
 	CameraController* cameraController_ = nullptr;

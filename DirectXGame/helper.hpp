@@ -1,6 +1,11 @@
 ﻿#pragma once
 #include <KamataEngine.h>
 
+enum class LRDirection {
+	kRight,
+	kLeft,
+};
+
 inline KamataEngine::Matrix4x4 operator*(const KamataEngine::Matrix4x4& m1, const KamataEngine::Matrix4x4& m2) {
 	KamataEngine::Matrix4x4 result = {};
 	for (int i = 0; i < 4; ++i) {
@@ -40,7 +45,7 @@ inline KamataEngine::Matrix4x4 CreateAffineMatrix(const KamataEngine::Vector3& s
 	KamataEngine::Matrix4x4 scaleMatrix = KamataEngine::MathUtility::MakeScaleMatrix(scale);
 
 	// 回転行列（オイラー角から）
-	KamataEngine::Matrix4x4 rotationMatrix = KamataEngine::MathUtility::MakeRotateXMatrix(rotation.x);
+	KamataEngine::Matrix4x4 rotationMatrixX = KamataEngine::MathUtility::MakeRotateXMatrix(rotation.x);
 	KamataEngine::Matrix4x4 rotationMatrixY = KamataEngine::MathUtility::MakeRotateYMatrix(rotation.y);
 	KamataEngine::Matrix4x4 rotationMatrixZ = KamataEngine::MathUtility::MakeRotateZMatrix(rotation.z);
 
@@ -48,7 +53,7 @@ inline KamataEngine::Matrix4x4 CreateAffineMatrix(const KamataEngine::Vector3& s
 	KamataEngine::Matrix4x4 translationMatrix = KamataEngine::MathUtility::MakeTranslateMatrix(translation);
 
 	// アフィン変換行列の合成
-	result = scaleMatrix * rotationMatrixZ * rotationMatrixY * rotationMatrix * translationMatrix;
+	result = scaleMatrix * rotationMatrixZ * rotationMatrixX * rotationMatrixY * translationMatrix;
 
 	return result;
 }

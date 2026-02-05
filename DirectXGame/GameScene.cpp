@@ -50,6 +50,12 @@ void GameScene::Initialize() {
 
 	cameraController_->SetTarget(player_);
 	cameraController_->Reset();
+
+	// 敵キャラクターの生成と初期化
+	enemy_ = new Enemy();
+	enemyModel_ = Model::CreateFromOBJ("enemy", true);
+	Vector3 enemyStartPosition = mapChipField_->GetMapChipPositionByIndex(10, 1);
+	enemy_->Initialize(enemyModel_, cameraController_->GetCamera(), enemyStartPosition);
 	
 
 	// ブロックモデルの生成と初期化
@@ -63,11 +69,15 @@ void GameScene::Initialize() {
 	skydomeModel_ = Model::CreateFromOBJ("skyDome", true);
 	skydome_ = new Skydome();
 	skydome_->Initialize(skydomeModel_, cameraController_->GetCamera());
+
 }
 
 void GameScene::Update() {
 	// プレイヤーの更新
 	player_->Update();
+
+	// 敵キャラクターの更新
+	if (enemy_ != nullptr)	enemy_->Update();
 
 	// カメラコントローラーの更新
 	cameraController_->Update();
@@ -129,6 +139,9 @@ void GameScene::Draw() {
 
 	// プレイヤーの描画
 	player_->Draw();
+
+	// 敵キャラクターの描画
+	if (enemy_ != nullptr) enemy_->Draw();
 
 	//  3Dモデル描画後処理
 	Model::PostDraw();

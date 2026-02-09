@@ -1,6 +1,7 @@
 #include "Enemy.h"
 #include "MapChipField.h"
-#include "helper.hpp"
+
+#include "Player.h"
 #include <algorithm>
 #include <array>
 #include <numbers>
@@ -43,7 +44,7 @@ void Enemy::Update() {
 	float degree = kWalkMotionAngleStart + kWalkMotionAngleEnd * (param + 1.f) / 2.f;
 	float radian = degree * std::numbers::pi_v<float> / 180.f;
 	worldTransform_.rotation_.x = radian;
-	//worldTransform_.rotation_.z = radian;
+	// worldTransform_.rotation_.z = radian;
 
 	worldTransform_.rotation_.y = std::numbers::pi_v<float> * 3.f / 2.f;
 	worldTransform_.translation_.x += velocity_.x;
@@ -57,3 +58,16 @@ void Enemy::Draw() {
 	// 3Dモデルの描画
 	model_->Draw(worldTransform_, *camera_);
 }
+
+AABB Enemy::GetAABB() {
+	AABB aabb;
+	aabb.min.x = worldTransform_.translation_.x - kWidth / 2.f;
+	aabb.min.y = worldTransform_.translation_.y - kHeight / 2.f;
+	aabb.min.z = worldTransform_.translation_.z - kWidth / 2.f;
+	aabb.max.x = worldTransform_.translation_.x + kWidth / 2.f;
+	aabb.max.y = worldTransform_.translation_.y + kHeight / 2.f;
+	aabb.max.z = worldTransform_.translation_.z + kWidth / 2.f;
+	return aabb;
+}
+
+void Enemy::OnCollision(Player* player) { (void)player; }

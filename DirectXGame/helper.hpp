@@ -57,3 +57,13 @@ inline KamataEngine::Matrix4x4 CreateAffineMatrix(const KamataEngine::Vector3& s
 
 	return result;
 }
+
+struct AABB {
+	KamataEngine::Vector3 min;
+	KamataEngine::Vector3 max;
+	
+	inline static bool CheckAABBCollision(const AABB& a, const AABB& b) {
+		return (a.min.x <= b.max.x && a.max.x >= b.min.x) && (a.min.y <= b.max.y && a.max.y >= b.min.y) && (a.min.z <= b.max.z && a.max.z >= b.min.z);
+	}
+};
+

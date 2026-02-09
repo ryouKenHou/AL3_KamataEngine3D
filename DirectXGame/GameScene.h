@@ -8,6 +8,7 @@
 #include "CameraController.h"
 #include "helper.hpp"
 #include "list"
+#include "DeathParticles.h"
 
 class GameScene {
 private:
@@ -15,6 +16,10 @@ private:
 	Player* player_ = nullptr;
 	KamataEngine::Model* playerModel_ = nullptr;
 	KamataEngine::WorldTransform playerWorldTransform_;
+
+	// デスパーティクル
+	DeathParticles* deathParticles_ = nullptr;
+	KamataEngine::Model* deathParticleModel_ = nullptr;
 
 	// ブロックのモデル
 	KamataEngine::Model* blockModel_ = nullptr;

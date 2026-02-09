@@ -30,6 +30,12 @@ GameScene::~GameScene() {
 
 	// マップチップフィールドの解放
 	delete mapChipField_;
+
+	// カメラコントローラーの解放
+	delete cameraController_;
+
+	// デスパーティクルの解放
+	delete deathParticles_;
 }
 
 void GameScene::Initialize() {
@@ -78,6 +84,11 @@ void GameScene::Initialize() {
 	skydome_ = new Skydome();
 	skydome_->Initialize(skydomeModel_, cameraController_->GetCamera());
 
+	// デスパーティクルの生成と初期化
+	deathParticleModel_ = Model::CreateFromOBJ("deathParticle", true);
+	deathParticles_ = new DeathParticles();
+	deathParticles_->Initialize(deathParticleModel_, cameraController_->GetCamera(), player_->GetWorldPosition());
+
 }
 
 void GameScene::Update() {
@@ -90,6 +101,10 @@ void GameScene::Update() {
 	}
 
 	CheckAllCollisions();
+
+	if (deathParticles_) {
+		deathParticles_->Update();
+	}
 
 	// カメラコントローラーの更新
 	cameraController_->Update();
@@ -147,6 +162,10 @@ void GameScene::Draw() {
 			}
 			blockModel_->Draw(*transform, *cameraController_->GetCamera());
 		}
+	}
+
+	if (deathParticles_) {
+		deathParticles_->Draw();
 	}
 
 	// プレイヤーの描画

@@ -79,7 +79,8 @@ public:
 
 	void Draw();
 
-	const KamataEngine::WorldTransform& GetWorldTransform() const;
+	const KamataEngine::WorldTransform& GetWorldTransform() const { return worldTransform_; }
+	const KamataEngine::Vector3& GetWorldPosition() const { return worldTransform_.translation_; }
 	const KamataEngine::Vector3& GetVelocity() const { return velocity_; }
 
 	AABB GetAABB();

@@ -385,24 +385,15 @@ void Player::Draw() {
 	model_->Draw(worldTransform_, *camera_);
 }
 
-const KamataEngine::WorldTransform& Player::GetWorldTransform() const {
-	Vector3 worldPos;
-
-	worldPos.x = worldTransform_.translation_.x;
-	worldPos.y = worldTransform_.translation_.y;
-	worldPos.z = worldTransform_.translation_.z;
-
-	return worldTransform_;
-}
-
 AABB Player::GetAABB() {
+	Vector3 worldPos = GetWorldPosition();
 	AABB aabb;
-	aabb.min.x = worldTransform_.translation_.x - kWidth / 2.f;
-	aabb.min.y = worldTransform_.translation_.y - kHeight / 2.f;
-	aabb.min.z = worldTransform_.translation_.z - kWidth / 2.f;
-	aabb.max.x = worldTransform_.translation_.x + kWidth / 2.f;
-	aabb.max.y = worldTransform_.translation_.y + kHeight / 2.f;
-	aabb.max.z = worldTransform_.translation_.z + kWidth / 2.f;
+	aabb.min.x = worldPos.x - kWidth / 2.f;
+	aabb.min.y = worldPos.y - kHeight / 2.f;
+	aabb.min.z = worldPos.z - kWidth / 2.f;
+	aabb.max.x = worldPos.x + kWidth / 2.f;
+	aabb.max.y = worldPos.y + kHeight / 2.f;
+	aabb.max.z = worldPos.z + kWidth / 2.f;
 	return aabb;
 }
 

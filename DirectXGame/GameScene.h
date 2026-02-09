@@ -7,6 +7,7 @@
 #include "vector"
 #include "CameraController.h"
 #include "helper.hpp"
+#include "list"
 
 class GameScene {
 private:
@@ -20,7 +21,8 @@ private:
 	std::vector<std::vector<KamataEngine::WorldTransform*>> blockWorldTransforms_;
 
 	// 敵キャラクター
-	Enemy* enemy_ = nullptr;
+	int enemyMax_ = 1;
+	std::list<Enemy*> enemies_;
 	KamataEngine::Model* enemyModel_ = nullptr;
 
 	// カメラ
@@ -51,4 +53,6 @@ public:
 	void Draw();
 
 	void GenerateBlocks();
+
+	void CheckAllCollisions();
 };

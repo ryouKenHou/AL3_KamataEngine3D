@@ -16,6 +16,12 @@ GameScene::~GameScene() {
 	}
 	blockWorldTransforms_.clear();
 
+	// 敵キャラクターの解放
+	for (Enemy* enemy : enemies_) {
+		delete enemy;
+	}
+	enemies_.clear();
+
 	// デバッグカメラの解放
 	delete debugCamera_;
 
@@ -52,11 +58,13 @@ void GameScene::Initialize() {
 	cameraController_->Reset();
 
 	// 敵キャラクターの生成と初期化
-	enemy_ = new Enemy();
 	enemyModel_ = Model::CreateFromOBJ("enemy", true);
-	Vector3 enemyStartPosition = mapChipField_->GetMapChipPositionByIndex(10, 1);
-	enemy_->Initialize(enemyModel_, cameraController_->GetCamera(), enemyStartPosition);
-	
+	for (int i = 0; i < enemyMax_; ++i) {
+		Enemy* enemy = new Enemy();		
+		Vector3 enemyStartPosition = mapChipField_->GetMapChipPositionByIndex(10 + i * 5, 1);
+		enemy->Initialize(enemyModel_, cameraController_->GetCamera(), enemyStartPosition);
+		enemies_.push_back(enemy);
+	}	
 
 	// ブロックモデルの生成と初期化
 	blockModel_ = Model::CreateFromOBJ("block", true);
@@ -77,7 +85,11 @@ void GameScene::Update() {
 	player_->Update();
 
 	// 敵キャラクターの更新
-	if (enemy_ != nullptr)	enemy_->Update();
+	for (Enemy* enemy : enemies_) {
+		enemy->Update();
+	}
+
+	CheckAllCollisions();
 
 	// カメラコントローラーの更新
 	cameraController_->Update();
@@ -141,7 +153,9 @@ void GameScene::Draw() {
 	player_->Draw();
 
 	// 敵キャラクターの描画
-	if (enemy_ != nullptr) enemy_->Draw();
+	for (Enemy* enemy : enemies_) {
+		enemy->Draw();
+	}
 
 	//  3Dモデル描画後処理
 	Model::PostDraw();
@@ -166,4 +180,31 @@ void GameScene::GenerateBlocks() {
 			}
 		}
 	}
+}
+
+void GameScene::CheckAllCollisions() {
+#pragma region Player vs MapChipField
+	{
+		AABB aabb1, aabb2;
+		aabb1 = player_->GetAABB();
+
+		for (Enemy* e : enemies_) {
+			aabb2 = e->GetAABB();
+			if (AABB::CheckAABBCollision(aabb1, aabb2)) {
+				player_->OnCollision(e);
+				e->OnCollision(player_);
+			}
+		}
+	}
+#pragma endregion
+
+
+#pragma region Player vs items
+
+#pragma endregion
+
+
+#pragma region PlayerBullet vs enemies
+
+#pragma endregion
 }

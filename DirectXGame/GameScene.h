@@ -11,7 +11,16 @@
 #include "DeathParticles.h"
 
 class GameScene {
+public:
+	enum class Phase{
+		kPlay,
+		kDeath,
+	};
+
 private:
+	// ゲームシーンの状態
+	Phase phase_;
+
 	// プレイヤー
 	Player* player_ = nullptr;
 	KamataEngine::Model* playerModel_ = nullptr;
@@ -44,6 +53,8 @@ private:
 	// マップチップフィールド
 	MapChipField* mapChipField_;
 
+	bool isFinished_ = false;
+
 public:
 	GameScene();
 	~GameScene();
@@ -60,4 +71,8 @@ public:
 	void GenerateBlocks();
 
 	void CheckAllCollisions();
+
+	void ChangePhase();
+
+	bool IsFinished() const { return isFinished_; }
 };

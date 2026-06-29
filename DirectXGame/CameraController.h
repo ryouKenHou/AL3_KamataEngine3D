@@ -10,13 +10,19 @@ struct Rect {
 	float top = 1.f;
 };
 
-enum class Mode {
-	kFollow,
-	kForcedScroll,
-};
+
 
 class CameraController {
+public:
+	enum class Mode {
+		kFollow,
+		kForcedScroll,
+	};
+
 private:
+
+	
+
 	KamataEngine::Camera* camera_ = nullptr;
 
 	Player* target_ = nullptr;

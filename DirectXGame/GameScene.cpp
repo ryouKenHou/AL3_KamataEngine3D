@@ -39,19 +39,18 @@ GameScene::~GameScene() {
 }
 
 void GameScene::Initialize() {
+	// ゲームシーンの状態を初期化
+	phase_ = Phase::kPlay;
+
 	// カメラコントローラーの生成
 	cameraController_ = new CameraController();
-	cameraController_->Initialize();	
-	cameraController_->SetMode(Mode::kForcedScroll);
+	cameraController_->Initialize();
+	cameraController_->SetMode(CameraController::Mode::kForcedScroll);
 
 	// マップチップフィールドの生成と初期化
 	mapChipField_ = new MapChipField();
 	mapChipField_->LoadMapChipCsv("Resources/Blocks.csv");
-	Rect CameraMovableArea = {
-		11.0f,
-		(MapChipField::GetNumBlockHorizontal()-11.f) * mapChipField_->GetBlockWidth(),
-		6.0f,
-		MapChipField::GetNumBlockVirtical() * mapChipField_->GetBlockHeight()};
+	Rect CameraMovableArea = {11.0f, (MapChipField::GetNumBlockHorizontal() - 11.f) * mapChipField_->GetBlockWidth(), 6.0f, MapChipField::GetNumBlockVirtical() * mapChipField_->GetBlockHeight()};
 	cameraController_->SetMovableArea(CameraMovableArea);
 
 	// プレイヤーの生成と初期化
@@ -67,11 +66,11 @@ void GameScene::Initialize() {
 	// 敵キャラクターの生成と初期化
 	enemyModel_ = Model::CreateFromOBJ("enemy", true);
 	for (int i = 0; i < enemyMax_; ++i) {
-		Enemy* enemy = new Enemy();		
+		Enemy* enemy = new Enemy();
 		Vector3 enemyStartPosition = mapChipField_->GetMapChipPositionByIndex(10 + i * 5, 1);
 		enemy->Initialize(enemyModel_, cameraController_->GetCamera(), enemyStartPosition);
 		enemies_.push_back(enemy);
-	}	
+	}
 
 	// ブロックモデルの生成と初期化
 	blockModel_ = Model::CreateFromOBJ("block", true);
@@ -89,62 +88,122 @@ void GameScene::Initialize() {
 	deathParticleModel_ = Model::CreateFromOBJ("deathParticle", true);
 	deathParticles_ = new DeathParticles();
 	deathParticles_->Initialize(deathParticleModel_, cameraController_->GetCamera(), player_->GetWorldPosition());
-
 }
 
 void GameScene::Update() {
-	// プレイヤーの更新
-	player_->Update();
 
-	// 敵キャラクターの更新
-	for (Enemy* enemy : enemies_) {
-		enemy->Update();
-	}
+	switch (phase_) {
+	case Phase::kPlay: {
+		// プレイヤーの更新
+		player_->Update();
 
-	CheckAllCollisions();
-
-	if (deathParticles_) {
-		deathParticles_->Update();
-	}
-
-	// カメラコントローラーの更新
-	cameraController_->Update();
-
-	// ブロックの更新
-	for (auto& row : blockWorldTransforms_) {
-		for (WorldTransform* transform : row) {
-			if (!transform) {
-				continue;
-			}
-			// アフィン変換行列の作成
-			transform->scale_ = {1.0f, 1.0f, 1.0f};
-			transform->rotation_ = {0.0f, 0.0f, 0.0f};
-
-			transform->matWorld_ = CreateAffineMatrix(transform->scale_, transform->rotation_, transform->translation_);
-			// 定数バッファに転送する
-			transform->TransferMatrix();
+		// 敵キャラクターの更新
+		for (Enemy* enemy : enemies_) {
+			enemy->Update();
 		}
-	}
 
-	// スカイドームの更新
-	skydome_->Update();
+		CheckAllCollisions();
+
+		// カメラコントローラーの更新
+		cameraController_->Update();
+
+		// ブロックの更新
+		for (auto& row : blockWorldTransforms_) {
+			for (WorldTransform* transform : row) {
+				if (!transform) {
+					continue;
+				}
+				// アフィン変換行列の作成
+				transform->scale_ = {1.0f, 1.0f, 1.0f};
+				transform->rotation_ = {0.0f, 0.0f, 0.0f};
+
+				transform->matWorld_ = CreateAffineMatrix(transform->scale_, transform->rotation_, transform->translation_);
+				// 定数バッファに転送する
+				transform->TransferMatrix();
+			}
+		}
+
+		// スカイドームの更新
+		skydome_->Update();
 
 #ifdef _DEBUG
-	if (Input::GetInstance()->TriggerKey(DIK_C)) {
-		isDebugCameraActive_ = !isDebugCameraActive_;
-	}
+		if (Input::GetInstance()->TriggerKey(DIK_C)) {
+			isDebugCameraActive_ = !isDebugCameraActive_;
+		}
 #endif // _DEBUG
 
-	if (isDebugCameraActive_) {
-		// デバッグカメラ更新
-		debugCamera_->Update();
-		// カメラにデバッグカメラをセット
-		cameraController_->GetCamera()->matView = debugCamera_->GetCamera().matView;
-		cameraController_->GetCamera()->matProjection = debugCamera_->GetCamera().matProjection;
-		cameraController_->GetCamera()->TransferMatrix();
-	} else {
-		// 通常カメラ更新
-		cameraController_->GetCamera()->UpdateMatrix();
+		if (isDebugCameraActive_) {
+			// デバッグカメラ更新
+			debugCamera_->Update();
+			// カメラにデバッグカメラをセット
+			cameraController_->GetCamera()->matView = debugCamera_->GetCamera().matView;
+			cameraController_->GetCamera()->matProjection = debugCamera_->GetCamera().matProjection;
+			cameraController_->GetCamera()->TransferMatrix();
+		} else {
+			// 通常カメラ更新
+			cameraController_->GetCamera()->UpdateMatrix();
+		}
+
+		if (player_->IsAlive() == false) {
+			phase_ = Phase::kDeath;
+			deathParticles_->Initialize(deathParticleModel_, cameraController_->GetCamera(), player_->GetWorldPosition());
+		}
+
+		break;
+	}
+	case Phase::kDeath: {
+		// スカイドームの更新
+		skydome_->Update();
+
+		// 敵キャラクターの更新
+		for (Enemy* enemy : enemies_) {
+			enemy->Update();
+		}
+
+		// デスパーティクルの更新
+		if (deathParticles_) {
+			deathParticles_->Update();
+		}
+
+#ifdef _DEBUG
+		if (Input::GetInstance()->TriggerKey(DIK_C)) {
+			isDebugCameraActive_ = !isDebugCameraActive_;
+		}
+#endif // _DEBUG
+		if (isDebugCameraActive_) {
+			// デバッグカメラ更新
+			debugCamera_->Update();
+			// カメラにデバッグカメラをセット
+			cameraController_->GetCamera()->matView = debugCamera_->GetCamera().matView;
+			cameraController_->GetCamera()->matProjection = debugCamera_->GetCamera().matProjection;
+			cameraController_->GetCamera()->TransferMatrix();
+		} else {
+			// 通常カメラ更新
+			cameraController_->GetCamera()->UpdateMatrix();
+		}
+
+		// ブロックの更新
+		for (auto& row : blockWorldTransforms_) {
+			for (WorldTransform* transform : row) {
+				if (!transform) {
+					continue;
+				}
+				// アフィン変換行列の作成
+				transform->scale_ = {1.0f, 1.0f, 1.0f};
+				transform->rotation_ = {0.0f, 0.0f, 0.0f};
+
+				transform->matWorld_ = CreateAffineMatrix(transform->scale_, transform->rotation_, transform->translation_);
+				// 定数バッファに転送する
+				transform->TransferMatrix();
+			}
+		}
+
+		if (deathParticles_ && deathParticles_->IsFinished()) {
+			isFinished_ = true;
+		}
+
+		break;
+	}
 	}
 }
 
@@ -218,11 +277,9 @@ void GameScene::CheckAllCollisions() {
 	}
 #pragma endregion
 
-
 #pragma region Player vs items
 
 #pragma endregion
-
 
 #pragma region PlayerBullet vs enemies
 

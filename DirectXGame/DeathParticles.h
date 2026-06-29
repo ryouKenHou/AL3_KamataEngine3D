@@ -27,4 +27,5 @@ public:
 	void Update();
 	void Draw();
 
+	bool IsFinished() const { return isFinished_; }
 };

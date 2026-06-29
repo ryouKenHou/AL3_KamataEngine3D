@@ -53,6 +53,8 @@ private:
 	// マップチップフィールド
 	MapChipField* mapChipField_;
 
+	bool isFinished_ = false;
+
 public:
 	GameScene();
 	~GameScene();
@@ -71,4 +73,6 @@ public:
 	void CheckAllCollisions();
 
 	void ChangePhase();
+
+	bool IsFinished() const { return isFinished_; }
 };

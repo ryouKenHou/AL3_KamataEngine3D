@@ -11,7 +11,16 @@
 #include "DeathParticles.h"
 
 class GameScene {
+public:
+	enum class Phase{
+		kPlay,
+		kDeath,
+	};
+
 private:
+	// ゲームシーンの状態
+	Phase phase_;
+
 	// プレイヤー
 	Player* player_ = nullptr;
 	KamataEngine::Model* playerModel_ = nullptr;
@@ -60,4 +69,6 @@ public:
 	void GenerateBlocks();
 
 	void CheckAllCollisions();
+
+	void ChangePhase();
 };

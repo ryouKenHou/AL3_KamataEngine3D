@@ -55,7 +55,7 @@ private:
 	MapChipField* mapChipField_ = nullptr;
 
 	bool pushed_ = false;
-	bool isAlive_ = true;
+	bool isDead_ = false;
 
 	int DeadAnimationCounter_ = 0;
 	int DeadAnimationDuration_ = 120;
@@ -98,5 +98,5 @@ public:
 
 	void OnCollision(Enemy* enemy);
 
-	bool IsAlive() const { return isAlive_; }
+	bool IsAlive() const { return !isDead_; }
 };

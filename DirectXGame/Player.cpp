@@ -333,7 +333,7 @@ void Player::OnWallCollided(const CollisionMapInfo& info) {
 	if (info.wallCollided) {
 		velocity_.x *= 1.f - kAttenuationWall;
 		if (pushed_) {
-			isAlive_ = false;
+			isDead_ = true;
 		}
 	}
 }
@@ -347,7 +347,7 @@ void Player::MapCollision(CollisionMapInfo* info) {
 }
 
 void Player::Update() {
-	if (isAlive_) {
+	if (!isDead_) {
 		// 入力処理
 		MoveInput();
 
@@ -403,6 +403,9 @@ void Player::Update() {
 
 void Player::Draw() {
 	// 3Dモデルの描画
+	if (isDead_) {
+		return;
+	}
 	model_->Draw(worldTransform_, *camera_);
 }
 
@@ -420,5 +423,6 @@ AABB Player::GetAABB() {
 
 void Player::OnCollision(Enemy* enemy) {
 	(void)enemy;
-	velocity_ += Vector3(0, kJumpAcceleration, 0);
+	//velocity_ += Vector3(0, kJumpAcceleration, 0);
+	isDead_ = true;
 }

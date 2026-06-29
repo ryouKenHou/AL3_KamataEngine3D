@@ -36,6 +36,7 @@ void Player::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera
 }
 
 void Player::MoveInput() {
+	
 	// 移動入力
 	if (onGround_) {
 		if (Input::GetInstance()->PushKey(DIK_RIGHT) || Input::GetInstance()->PushKey(DIK_LEFT) || Input::GetInstance()->PushKey(DIK_UP)) {
@@ -331,6 +332,9 @@ void Player::MapCollisionRight(CollisionMapInfo* info) {
 void Player::OnWallCollided(const CollisionMapInfo& info) {
 	if (info.wallCollided) {
 		velocity_.x *= 1.f - kAttenuationWall;
+		if (pushed_) {
+			isAlive_ = false;
+		}
 	}
 }
 
@@ -343,36 +347,53 @@ void Player::MapCollision(CollisionMapInfo* info) {
 }
 
 void Player::Update() {
-	// 入力処理
-	MoveInput();
+	if (isAlive_) {
+		// 入力処理
+		MoveInput();
 
-	// マップチップとの当たり判定
-	CollisionMapInfo collisionInfo;
-	collisionInfo.moveValue = velocity_;
-	MapCollision(&collisionInfo);
+		// マップチップとの当たり判定
+		CollisionMapInfo collisionInfo;
+		collisionInfo.moveValue = velocity_;
+		MapCollision(&collisionInfo);
 
-	// 移動処理
-	MoveAfterMapCollisionCheck(collisionInfo);
+		// 移動処理
+		MoveAfterMapCollisionCheck(collisionInfo);
 
-	// 天井衝突時の処理
-	OnCeilingCollided(collisionInfo);
+		// 天井衝突時の処理
+		OnCeilingCollided(collisionInfo);
 
-	// 地面衝突時の処理
-	OnGroundCollided(collisionInfo);
+		// 地面衝突時の処理
+		OnGroundCollided(collisionInfo);
 
-	// 壁衝突時の処理
-	OnWallCollided(collisionInfo);
+		// 壁衝突時の処理
+		OnWallCollided(collisionInfo);
+		pushed_ = false;
 
-	// 旋回制御
-	if (turnTimer_ > 0.f) {
-		turnTimer_ -= 1.f / 60.f;
+		// 旋回制御
+		if (turnTimer_ > 0.f) {
+			turnTimer_ -= 1.f / 60.f;
 
-		float destinationRotationYTable[] = {std::numbers::pi_v<float> / 2.f, std::numbers::pi_v<float> * 3.f / 2.f};
+			float destinationRotationYTable[] = {std::numbers::pi_v<float> / 2.f, std::numbers::pi_v<float> * 3.f / 2.f};
 
-		float destinationRotationY = destinationRotationYTable[static_cast<uint32_t>(lrDirection_)];
+			float destinationRotationY = destinationRotationYTable[static_cast<uint32_t>(lrDirection_)];
 
-		float t = (kTimeTurn - turnTimer_) / kTimeTurn;
-		worldTransform_.rotation_.y = turnFirstRotationY_ + (destinationRotationY - turnFirstRotationY_) * t;
+			float t = (kTimeTurn - turnTimer_) / kTimeTurn;
+			worldTransform_.rotation_.y = turnFirstRotationY_ + (destinationRotationY - turnFirstRotationY_) * t;
+		}
+	} else {
+		// 死亡アニメーション
+		DeadAnimationCounter_++;
+		worldTransform_.rotation_.y += 0.1f;
+		if (DeadAnimationCounter_ < 60.f) {
+			worldTransform_.translation_.y += 0.2f * sinf(DeadAnimationCounter_ * 3.14159f / 30);
+		} else {
+			worldTransform_.translation_.y -= 0.2f;
+		}
+		
+		if (DeadAnimationCounter_ >= DeadAnimationDuration_) {
+			// ゲームオーバー処理
+			DebugText::GetInstance()->ConsolePrintf("Game Over\n");
+		}
 	}
 
 	// ワールドトランスフォームの更新

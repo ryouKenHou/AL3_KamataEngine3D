@@ -54,6 +54,12 @@ private:
 
 	MapChipField* mapChipField_ = nullptr;
 
+	bool pushed_ = false;
+	bool isAlive_ = true;
+
+	int DeadAnimationCounter_ = 0;
+	int DeadAnimationDuration_ = 120;
+
 public:
 	Player();
 	~Player();
@@ -85,7 +91,12 @@ public:
 
 	AABB GetAABB();
 
+	void AddVelocity(const KamataEngine::Vector3& addVelocity) { velocity_ += addVelocity; pushed_ = true; }
+	void SetVelocity(const KamataEngine::Vector3& velocity) { velocity_ = velocity; }
+
 	void SetMapChipField(MapChipField* mapChipField) { mapChipField_ = mapChipField; } 
 
 	void OnCollision(Enemy* enemy);
+
+	bool IsAlive() const { return isAlive_; }
 };

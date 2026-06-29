@@ -42,13 +42,14 @@ void GameScene::Initialize() {
 	// カメラコントローラーの生成
 	cameraController_ = new CameraController();
 	cameraController_->Initialize();	
+	cameraController_->SetMode(Mode::kForcedScroll);
 
 	// マップチップフィールドの生成と初期化
 	mapChipField_ = new MapChipField();
 	mapChipField_->LoadMapChipCsv("Resources/Blocks.csv");
 	Rect CameraMovableArea = {
 		11.0f,
-		MapChipField::GetNumBlockHorizontal() * mapChipField_->GetBlockWidth(),
+		(MapChipField::GetNumBlockHorizontal()-11.f) * mapChipField_->GetBlockWidth(),
 		6.0f,
 		MapChipField::GetNumBlockVirtical() * mapChipField_->GetBlockHeight()};
 	cameraController_->SetMovableArea(CameraMovableArea);

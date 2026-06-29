@@ -10,6 +10,11 @@ struct Rect {
 	float top = 1.f;
 };
 
+enum class Mode {
+	kFollow,
+	kForcedScroll,
+};
+
 class CameraController {
 private:
 	KamataEngine::Camera* camera_ = nullptr;
@@ -17,12 +22,14 @@ private:
 	Player* target_ = nullptr;
 	KamataEngine::Vector3 offset_ = {0.f, 0.f, -15.f};
 
-	Rect movableArea_ = {0, 100, 0, 100};
+	Mode mode_ = Mode::kFollow;
+	Rect movableArea_ = {0, 20, 0, 100};
 	KamataEngine::Vector3 targetPosition_ = {0.f, 0.f, 0.f};
 
 	static inline const float kInterpolationRate = 0.1f;
 	static inline const float kVelocityBias = 15.f;
 	static inline const Rect marginArea = {-10.f, 10.f, -10.f, 10.f};
+	static inline const float kForcedScrollSpeed = 0.02f;
 
 public:
 	CameraController();
@@ -34,4 +41,7 @@ public:
 	KamataEngine::Camera* GetCamera() const { return camera_; }
 	void SetTarget(Player* target) { target_ = target; }
 	void SetMovableArea(const Rect& area) { movableArea_ = area; }
+
+	void SetMode(Mode mode) { mode_ = mode; }
+	Mode GetMode() const { return mode_; }
 };

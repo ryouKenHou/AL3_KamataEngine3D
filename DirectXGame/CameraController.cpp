@@ -1,7 +1,7 @@
 #include "CameraController.h"
 #include "Player.h"
 #include "algorithm"
-#include "helper.hpp"
+
 
 using namespace KamataEngine;
 

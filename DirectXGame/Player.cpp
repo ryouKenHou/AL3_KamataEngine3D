@@ -14,12 +14,13 @@ Player::~Player() {
 	delete model_;
 }
 
-void Player::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera, const KamataEngine::Vector3& position) {
+void Player::Initialize(KamataEngine::Model* model, KamataEngine::Model* modelAttack,KamataEngine::Camera* camera, const KamataEngine::Vector3& position) {
 	assert(model);
 	assert(camera);
 
 	// 3D モデルの生成
 	model_ = model;
+	modelAttack_ = modelAttack;
 
 	// ワールドトランスフォームの初期化
 	worldTransform_.Initialize();
@@ -31,12 +32,18 @@ void Player::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera
 	// 定数バッファに転送する
 	worldTransform_.TransferMatrix();
 
+	worldTransformAttack_.Initialize();
+	worldTransformAttack_.translation_ = position;
+	worldTransformAttack_.scale_ = {1.0f, 1.0f, 1.0f};
+	worldTransformAttack_.rotation_.y = std::numbers::pi_v<float> / 2.f;
+	worldTransformAttack_.matWorld_ = CreateAffineMatrix(worldTransformAttack_.scale_, worldTransformAttack_.rotation_, worldTransformAttack_.translation_);
+	worldTransformAttack_.TransferMatrix();
 	// カメラのセット
 	camera_ = camera;
 }
 
 void Player::MoveInput() {
-	
+
 	// 移動入力
 	if (onGround_) {
 		if (Input::GetInstance()->PushKey(DIK_RIGHT) || Input::GetInstance()->PushKey(DIK_LEFT) || Input::GetInstance()->PushKey(DIK_UP)) {
@@ -239,6 +246,8 @@ void Player::OnGroundCollided(const CollisionMapInfo& info) {
 			velocity_.y = 0.f;
 			velocity_.x *= (1.f - kAttenuationLanding);
 			onGround_ = true;
+
+			canAttack_ = true;
 		}
 	}
 }
@@ -347,58 +356,127 @@ void Player::MapCollision(CollisionMapInfo* info) {
 }
 
 void Player::Update() {
-	if (!isDead_) {
-		// 入力処理
-		MoveInput();
 
-		// マップチップとの当たり判定
-		CollisionMapInfo collisionInfo;
-		collisionInfo.moveValue = velocity_;
-		MapCollision(&collisionInfo);
+	if (behaviorRequest != Behavior::kUnknown) {
+		behavior_ = behaviorRequest;
 
-		// 移動処理
-		MoveAfterMapCollisionCheck(collisionInfo);
-
-		// 天井衝突時の処理
-		OnCeilingCollided(collisionInfo);
-
-		// 地面衝突時の処理
-		OnGroundCollided(collisionInfo);
-
-		// 壁衝突時の処理
-		OnWallCollided(collisionInfo);
-		pushed_ = false;
-
-		// 旋回制御
-		if (turnTimer_ > 0.f) {
-			turnTimer_ -= 1.f / 60.f;
-
-			float destinationRotationYTable[] = {std::numbers::pi_v<float> / 2.f, std::numbers::pi_v<float> * 3.f / 2.f};
-
-			float destinationRotationY = destinationRotationYTable[static_cast<uint32_t>(lrDirection_)];
-
-			float t = (kTimeTurn - turnTimer_) / kTimeTurn;
-			worldTransform_.rotation_.y = turnFirstRotationY_ + (destinationRotationY - turnFirstRotationY_) * t;
+		switch (behavior_) {
+		case Behavior::kRoot:
+			BehaviorRootInitialize();
+			break;
+		case Behavior::kAttack:
+			BehaviorAttackInitialize();
+			break;
 		}
-	} else {
-		// 死亡アニメーション
-		DeadAnimationCounter_++;
-		worldTransform_.rotation_.y += 0.1f;
-		if (DeadAnimationCounter_ < 60.f) {
-			worldTransform_.translation_.y += 0.2f * sinf(DeadAnimationCounter_ * 3.14159f / 30);
-		} else {
-			worldTransform_.translation_.y -= 0.2f;
-		}
-		
-		if (DeadAnimationCounter_ >= DeadAnimationDuration_) {
-			// ゲームオーバー処理
-			DebugText::GetInstance()->ConsolePrintf("Game Over\n");
-		}
+		behaviorRequest = Behavior::kUnknown;
 	}
+
+	switch (behavior_) {
+	case Behavior::kRoot:
+		BehaviorRootUpdate();
+		break;
+	case Behavior::kAttack:
+		BehaviorAttackUpdate();
+		break;
+	}
+
+	// マップチップとの当たり判定
+	CollisionMapInfo collisionInfo;
+	collisionInfo.moveValue = velocity_;
+	MapCollision(&collisionInfo);
+	// 移動処理
+	MoveAfterMapCollisionCheck(collisionInfo);
+	// 天井衝突時の処理
+	OnCeilingCollided(collisionInfo);
+	// 地面衝突時の処理
+	OnGroundCollided(collisionInfo);
+	// 壁衝突時の処理
+	OnWallCollided(collisionInfo);
 
 	// ワールドトランスフォームの更新
 	worldTransform_.matWorld_ = CreateAffineMatrix(worldTransform_.scale_, worldTransform_.rotation_, worldTransform_.translation_);
 	worldTransform_.TransferMatrix();
+}
+
+void Player::BehaviorRootUpdate() {
+	// 入力処理
+	MoveInput();
+
+	pushed_ = false;
+	// 旋回制御
+	if (turnTimer_ > 0.f) {
+		turnTimer_ -= 1.f / 60.f;
+		float destinationRotationYTable[] = {std::numbers::pi_v<float> / 2.f, std::numbers::pi_v<float> * 3.f / 2.f};
+		float destinationRotationY = destinationRotationYTable[static_cast<uint32_t>(lrDirection_)];
+		float t = (kTimeTurn - turnTimer_) / kTimeTurn;
+		worldTransform_.rotation_.y = turnFirstRotationY_ + (destinationRotationY - turnFirstRotationY_) * t;
+	}
+
+	if (KamataEngine::Input::GetInstance()->TriggerKey(DIK_SPACE) && canAttack_) {
+		behaviorRequest = Behavior::kAttack;
+		canAttack_ = false;
+	}
+}
+
+void Player::BehaviorAttackUpdate() {
+	attackParameter_++;
+
+	velocity_.y = 0.f;
+
+	worldTransformAttack_.translation_ = worldTransform_.translation_;
+	worldTransformAttack_.rotation_ = worldTransform_.rotation_;
+	worldTransformAttack_.matWorld_ = CreateAffineMatrix(worldTransformAttack_.scale_, worldTransformAttack_.rotation_, worldTransformAttack_.translation_);
+	worldTransformAttack_.TransferMatrix();
+
+	switch (attackPhace_) {
+	case AttackPhace::kStart: {
+
+		float t = static_cast<float>(attackParameter_) / kattackStartDuration;
+		worldTransform_.scale_.z = EaseOut(1.f, 0.3f, t);
+		worldTransform_.scale_.y = EaseOut(1.f, 1.6f, t);
+		velocity_.x = 0;
+		if (attackParameter_ >= kattackStartDuration) {
+			attackPhace_ = AttackPhace::kAttack;
+			attackParameter_ = 0;
+		}
+		break;
+	}
+	case AttackPhace::kAttack: {
+
+		float t = static_cast<float>(attackParameter_) / kattackAttackDuration;
+		worldTransform_.scale_.z = EaseOut(0.3f, 1.3f, t);
+		worldTransform_.scale_.y = EaseIn(1.6f, 0.7f, t);
+		velocity_.x = EaseIn(0.f, kLimitRunSpeed * 5.f * (lrDirection_ == LRDirection::kRight ? 1.f : -1.f), t);
+		if (attackParameter_ >= kattackAttackDuration) {
+			attackPhace_ = AttackPhace::kEnd;
+			attackParameter_ = 0;
+		}
+		break;
+	}
+	case AttackPhace::kEnd: {
+		float t = static_cast<float>(attackParameter_) / kattackEndDuration;
+		worldTransform_.scale_.z = EaseOut(1.3f, 1.0f, t);
+		worldTransform_.scale_.y = EaseOut(0.6f, 1.0f, t);
+		velocity_.x = EaseOut(kLimitRunSpeed * 5.f * (lrDirection_ == LRDirection::kRight ? 1.f : -1.f), 0.f, t);
+
+		if (attackParameter_ >= kattackEndDuration) {
+			attackPhace_ = AttackPhace::kEnd;
+			behaviorRequest = Behavior::kRoot;
+			attackParameter_ = 0;
+		}
+		break;
+	}
+	}
+}
+
+void Player::BehaviorRootInitialize() {
+	// 初期化処理
+}
+
+void Player::BehaviorAttackInitialize() {
+	// 初期化処理
+	attackParameter_ = 0;
+	attackPhace_ = AttackPhace::kStart;
 }
 
 void Player::Draw() {
@@ -407,6 +485,9 @@ void Player::Draw() {
 		return;
 	}
 	model_->Draw(worldTransform_, *camera_);
+	if (behavior_ == Behavior::kAttack) {
+		modelAttack_->Draw(worldTransformAttack_, *camera_);
+	}
 }
 
 AABB Player::GetAABB() {
@@ -423,6 +504,6 @@ AABB Player::GetAABB() {
 
 void Player::OnCollision(Enemy* enemy) {
 	(void)enemy;
-	//velocity_ += Vector3(0, kJumpAcceleration, 0);
+	// velocity_ += Vector3(0, kJumpAcceleration, 0);
 	isDead_ = true;
 }

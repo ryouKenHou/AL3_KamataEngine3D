@@ -39,7 +39,7 @@ private:
 	std::vector<std::vector<KamataEngine::WorldTransform*>> blockWorldTransforms_;
 
 	// 敵キャラクター
-	int enemyMax_ = 1;
+	int enemyMax_ = 3;
 	std::list<Enemy*> enemies_;
 	KamataEngine::Model* enemyModel_ = nullptr;
 

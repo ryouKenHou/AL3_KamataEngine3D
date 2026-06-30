@@ -27,6 +27,7 @@ private:
 	// プレイヤー
 	Player* player_ = nullptr;
 	KamataEngine::Model* playerModel_ = nullptr;
+	KamataEngine::Model* playerAttackModel_ = nullptr;
 	KamataEngine::WorldTransform playerWorldTransform_;
 
 	// デスパーティクル

@@ -22,10 +22,26 @@ class MapChipField;
 class Enemy;
 
 class Player {
+public:
+	enum class Behavior {
+		kUnknown,
+		kRoot,
+		kAttack,
+	};
+
+	enum class AttackPhace {
+		kStart,
+		kAttack,
+		kEnd,
+	};
+	;
+
 private:
 	KamataEngine::WorldTransform worldTransform_;
-
 	KamataEngine::Model* model_ = nullptr;
+
+	KamataEngine::WorldTransform worldTransformAttack_;
+	KamataEngine::Model* modelAttack_ = nullptr;
 
 	uint32_t textureHandle_ = 0u;
 
@@ -59,6 +75,17 @@ private:
 
 	int DeadAnimationCounter_ = 0;
 	int DeadAnimationDuration_ = 120;
+	
+	Behavior behavior_ = Behavior::kRoot;
+	Behavior behaviorRequest = Behavior::kUnknown;
+	
+	uint32_t attackParameter_ = 0;
+	const UINT32 attackParameterMax_ = 18;
+	const float kattackStartDuration = 5.f;
+	const float kattackAttackDuration = 15.f;
+	const float kattackEndDuration = 5.f;
+	AttackPhace attackPhace_ = AttackPhace::kStart;
+	bool canAttack_ = true;
 
 public:
 	Player();
@@ -79,7 +106,7 @@ public:
 	void OnGroundCollided(const CollisionMapInfo& info);
 	void OnWallCollided(const CollisionMapInfo& info);
 
-	void Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera, const KamataEngine::Vector3& position);
+	void Initialize(KamataEngine::Model* model, KamataEngine::Model* modelAttack, KamataEngine::Camera* camera, const KamataEngine::Vector3& position);
 
 	void Update();
 
@@ -99,4 +126,11 @@ public:
 	void OnCollision(Enemy* enemy);
 
 	bool IsAlive() const { return !isDead_; }
+
+	void BehaviorRootUpdate();
+	void BehaviorRootInitialize();
+
+	void BehaviorAttackUpdate();	
+	void BehaviorAttackInitialize();
+
 };

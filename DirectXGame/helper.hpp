@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include <KamataEngine.h>
-
+#include <algorithm>
 enum class LRDirection {
 	kRight,
 	kLeft,
@@ -66,4 +66,14 @@ struct AABB {
 		return (a.min.x <= b.max.x && a.max.x >= b.min.x) && (a.min.y <= b.max.y && a.max.y >= b.min.y) && (a.min.z <= b.max.z && a.max.z >= b.min.z);
 	}
 };
+
+inline float EaseOut(float start, float end, float t) {
+	t = std::clamp(t, 0.0f, 1.0f);
+	return start + (end - start) * (1.0f - static_cast<float>(std::pow(1.0f - t, 3)));
+}
+
+inline float EaseIn(float start, float end, float t) {
+	t = std::clamp(t, 0.0f, 1.0f);
+	return start + (end - start) * static_cast<float>(std::pow(t, 3));
+}
 

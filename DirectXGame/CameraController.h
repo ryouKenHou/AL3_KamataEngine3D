@@ -1,5 +1,6 @@
 #pragma once
 #include <KamataEngine.h>
+#include "helper.hpp"
 
 class Player;
 
@@ -10,8 +11,6 @@ struct Rect {
 	float top = 1.f;
 };
 
-
-
 class CameraController {
 public:
 	enum class Mode {
@@ -20,9 +19,6 @@ public:
 	};
 
 private:
-
-	
-
 	KamataEngine::Camera* camera_ = nullptr;
 
 	Player* target_ = nullptr;

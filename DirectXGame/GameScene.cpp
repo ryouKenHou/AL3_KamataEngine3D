@@ -59,8 +59,9 @@ void GameScene::Initialize() {
 	// プレイヤーの生成と初期化
 	player_ = new Player();
 	playerModel_ = Model::CreateFromOBJ("player", true);
+	playerAttackModel_ = Model::CreateFromOBJ("hit_effect", true);
 	Vector3 playerStartPosition = mapChipField_->GetMapChipPositionByIndex(1, 1);
-	player_->Initialize(playerModel_, cameraController_->GetCamera(), playerStartPosition);
+	player_->Initialize(playerModel_, playerAttackModel_, cameraController_->GetCamera(), playerStartPosition);
 	player_->SetMapChipField(mapChipField_);
 
 	cameraController_->SetTarget(player_);

@@ -241,6 +241,7 @@ void Player::OnGroundCollided(const CollisionMapInfo& info) {
 				onGround_ = false;
 			}
 		}
+		canAttack_ = true;
 	} else {
 		if (info.grounded) {
 			velocity_.y = 0.f;
@@ -357,8 +358,8 @@ void Player::MapCollision(CollisionMapInfo* info) {
 
 void Player::Update() {
 
-	if (behaviorRequest != Behavior::kUnknown) {
-		behavior_ = behaviorRequest;
+	if (behaviorRequest_ != Behavior::kUnknown) {
+		behavior_ = behaviorRequest_;
 
 		switch (behavior_) {
 		case Behavior::kRoot:
@@ -368,7 +369,7 @@ void Player::Update() {
 			BehaviorAttackInitialize();
 			break;
 		}
-		behaviorRequest = Behavior::kUnknown;
+		behaviorRequest_= Behavior::kUnknown;
 	}
 
 	switch (behavior_) {
@@ -413,7 +414,7 @@ void Player::BehaviorRootUpdate() {
 	}
 
 	if (KamataEngine::Input::GetInstance()->TriggerKey(DIK_SPACE) && canAttack_) {
-		behaviorRequest = Behavior::kAttack; 
+		behaviorRequest_ = Behavior::kAttack; 
 		canAttack_ = false;
 	}
 }
@@ -461,7 +462,7 @@ void Player::BehaviorAttackUpdate() {
 
 		if (attackParameter_ >= kattackEndDuration) {
 			attackPhace_ = AttackPhace::kEnd;
-			behaviorRequest = Behavior::kRoot;
+			behaviorRequest_ = Behavior::kRoot;
 			attackParameter_ = 0;
 		}
 		break;
@@ -471,12 +472,14 @@ void Player::BehaviorAttackUpdate() {
 
 void Player::BehaviorRootInitialize() {
 	// 初期化処理
+	isAttacking_ = false;
 }
 
 void Player::BehaviorAttackInitialize() {
 	// 初期化処理
 	attackParameter_ = 0;
 	attackPhace_ = AttackPhace::kStart;
+	isAttacking_ = true;
 }
 
 void Player::Draw() {
@@ -503,7 +506,13 @@ AABB Player::GetAABB() {
 }
 
 void Player::OnCollision(Enemy* enemy) {
+
 	(void)enemy;
 	// velocity_ += Vector3(0, kJumpAcceleration, 0);
+
+	if (isAttacking_) {
+		return;
+	}
+
 	isDead_ = true;
 }

@@ -77,7 +77,7 @@ private:
 	int DeadAnimationDuration_ = 120;
 	
 	Behavior behavior_ = Behavior::kRoot;
-	Behavior behaviorRequest = Behavior::kUnknown;
+	Behavior behaviorRequest_ = Behavior::kUnknown;
 	
 	uint32_t attackParameter_ = 0;
 	const UINT32 attackParameterMax_ = 18;
@@ -86,6 +86,7 @@ private:
 	const float kattackEndDuration = 5.f;
 	AttackPhace attackPhace_ = AttackPhace::kStart;
 	bool canAttack_ = true;
+	bool isAttacking_ = false;
 
 public:
 	Player();

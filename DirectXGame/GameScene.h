@@ -9,12 +9,15 @@
 #include "helper.hpp"
 #include "list"
 #include "DeathParticles.h"
+#include "Fade.h"
 
 class GameScene {
 public:
 	enum class Phase{
+		kFadeIn,
 		kPlay,
 		kDeath,
+		kFadeOut,
 	};
 
 private:
@@ -54,6 +57,8 @@ private:
 	MapChipField* mapChipField_;
 
 	bool isFinished_ = false;
+
+	Fade* fade_ = nullptr;
 
 public:
 	GameScene();

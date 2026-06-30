@@ -36,16 +36,19 @@ GameScene::~GameScene() {
 
 	// デスパーティクルの解放
 	delete deathParticles_;
+
+	// フェードの解放
+	delete fade_;
 }
 
 void GameScene::Initialize() {
 	// ゲームシーンの状態を初期化
-	phase_ = Phase::kPlay;
+	phase_ = Phase::kFadeIn;
 
 	// カメラコントローラーの生成
 	cameraController_ = new CameraController();
 	cameraController_->Initialize();
-	cameraController_->SetMode(CameraController::Mode::kForcedScroll);
+	cameraController_->SetMode(CameraController::Mode::kFollow);
 
 	// マップチップフィールドの生成と初期化
 	mapChipField_ = new MapChipField();
@@ -88,11 +91,56 @@ void GameScene::Initialize() {
 	deathParticleModel_ = Model::CreateFromOBJ("deathParticle", true);
 	deathParticles_ = new DeathParticles();
 	deathParticles_->Initialize(deathParticleModel_, cameraController_->GetCamera(), player_->GetWorldPosition());
+
+	fade_ = new Fade();
+	fade_->Initialize();
+	fade_->Start(Fade::Status::kFadeIn, 1.0f);
 }
 
 void GameScene::Update() {
 
 	switch (phase_) {
+	case Phase::kFadeIn: {
+		if (fade_->IsFinished()) {
+			phase_ = Phase::kPlay;
+		}
+		fade_->Update();
+
+		// カメラコントローラーの更新
+		cameraController_->Update();
+
+		// ブロックの更新
+		for (auto& row : blockWorldTransforms_) {
+			for (WorldTransform* transform : row) {
+				if (!transform) {
+					continue;
+				}
+				// アフィン変換行列の作成
+				transform->scale_ = {1.0f, 1.0f, 1.0f};
+				transform->rotation_ = {0.0f, 0.0f, 0.0f};
+
+				transform->matWorld_ = CreateAffineMatrix(transform->scale_, transform->rotation_, transform->translation_);
+				// 定数バッファに転送する
+				transform->TransferMatrix();
+			}
+		}
+
+		if (isDebugCameraActive_) {
+			// デバッグカメラ更新
+			debugCamera_->Update();
+			// カメラにデバッグカメラをセット
+			cameraController_->GetCamera()->matView = debugCamera_->GetCamera().matView;
+			cameraController_->GetCamera()->matProjection = debugCamera_->GetCamera().matProjection;
+			cameraController_->GetCamera()->TransferMatrix();
+		} else {
+			// 通常カメラ更新
+			cameraController_->GetCamera()->UpdateMatrix();
+		}
+
+		// スカイドームの更新
+		skydome_->Update();
+		break;
+	}
 	case Phase::kPlay: {
 		// プレイヤーの更新
 		player_->Update();
@@ -199,6 +247,15 @@ void GameScene::Update() {
 		}
 
 		if (deathParticles_ && deathParticles_->IsFinished()) {
+			phase_ = Phase::kFadeOut;
+			fade_->Start(Fade::Status::kFadeOut, 1.0f);
+		}
+
+		break;
+	}
+	case Phase::kFadeOut: {
+		fade_->Update();
+		if (fade_->IsFinished()) {
 			isFinished_ = true;
 		}
 
@@ -238,6 +295,8 @@ void GameScene::Draw() {
 
 	//  3Dモデル描画後処理
 	Model::PostDraw();
+
+	fade_->Draw();
 }
 
 void GameScene::GenerateBlocks() {

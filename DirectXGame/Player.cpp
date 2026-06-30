@@ -413,7 +413,7 @@ void Player::BehaviorRootUpdate() {
 	}
 
 	if (KamataEngine::Input::GetInstance()->TriggerKey(DIK_SPACE) && canAttack_) {
-		behaviorRequest = Behavior::kAttack;
+		behaviorRequest = Behavior::kAttack; 
 		canAttack_ = false;
 	}
 }

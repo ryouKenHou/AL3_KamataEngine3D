@@ -1,6 +1,7 @@
 #include "Player.h"
 
 #include "Enemy.h"
+#include "ShieldEnemy.h"
 #include "MapChipField.h"
 #include <algorithm>
 #include <array>
@@ -358,6 +359,11 @@ void Player::MapCollision(CollisionMapInfo* info) {
 
 void Player::Update() {
 
+	if (knockBackRequest_) {
+		behaviorRequest_ = Behavior::kNockBack;
+		knockBackRequest_ = false;
+	}
+
 	if (behaviorRequest_ != Behavior::kUnknown) {
 		behavior_ = behaviorRequest_;
 
@@ -367,6 +373,9 @@ void Player::Update() {
 			break;
 		case Behavior::kAttack:
 			BehaviorAttackInitialize();
+			break;
+		case Behavior::kNockBack:
+			BehaviorKnockBackInitialize();
 			break;
 		}
 		behaviorRequest_= Behavior::kUnknown;
@@ -378,6 +387,9 @@ void Player::Update() {
 		break;
 	case Behavior::kAttack:
 		BehaviorAttackUpdate();
+		break;
+	case Behavior::kNockBack:
+		BehaviorKnockBackUpdate();
 		break;
 	}
 
@@ -397,6 +409,22 @@ void Player::Update() {
 	// ワールドトランスフォームの更新
 	worldTransform_.matWorld_ = CreateAffineMatrix(worldTransform_.scale_, worldTransform_.rotation_, worldTransform_.translation_);
 	worldTransform_.TransferMatrix();
+}
+
+void Player::BehaviorKnockBackInitialize() {
+	knockBackParameter_ = 0;
+	velocity_.x = 0;
+}
+
+void Player::KnockBackRequst() { knockBackRequest_ = true; }
+
+void Player::BehaviorKnockBackUpdate() {
+	knockBackParameter_++;
+	velocity_.x = -0.2f;
+	if (knockBackParameter_ >= knockBackParameterMax_) {
+		behaviorRequest_ = Behavior::kRoot;
+		knockBackParameter_ = 0;
+	}
 }
 
 void Player::BehaviorRootUpdate() {
@@ -506,6 +534,18 @@ AABB Player::GetAABB() {
 }
 
 void Player::OnCollision(Enemy* enemy) {
+
+	(void)enemy;
+	// velocity_ += Vector3(0, kJumpAcceleration, 0);
+
+	if (isAttacking_) {
+		return;
+	}
+
+	isDead_ = true;
+}
+
+void Player::OnCollision(ShieldEnemy* enemy) {
 
 	(void)enemy;
 	// velocity_ += Vector3(0, kJumpAcceleration, 0);

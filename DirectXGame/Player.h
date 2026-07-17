@@ -20,6 +20,7 @@ struct CollisionMapInfo {
 
 class MapChipField;
 class Enemy;
+class ShieldEnemy;
 
 class Player {
 public:
@@ -27,6 +28,7 @@ public:
 		kUnknown,
 		kRoot,
 		kAttack,
+		kNockBack,
 	};
 
 	enum class AttackPhace {
@@ -88,6 +90,10 @@ private:
 	bool canAttack_ = true;
 	bool isAttacking_ = false;
 
+	uint32_t knockBackParameter_ = 0;
+	const UINT32 knockBackParameterMax_ = 5;
+	bool knockBackRequest_ = false;
+
 public:
 	Player();
 	~Player();
@@ -125,6 +131,7 @@ public:
 	void SetMapChipField(MapChipField* mapChipField) { mapChipField_ = mapChipField; } 
 
 	void OnCollision(Enemy* enemy);
+	void OnCollision(ShieldEnemy* enemy);
 
 	bool IsAlive() const { return !isDead_; }
 
@@ -133,5 +140,12 @@ public:
 
 	void BehaviorAttackUpdate();	
 	void BehaviorAttackInitialize();
+
+	void BehaviorKnockBackUpdate();
+	void BehaviorKnockBackInitialize();
+	void KnockBackRequst();
+
+	bool IsAttacking() const { return isAttacking_; }
+	LRDirection GetLRDirection() const { return lrDirection_; }
 
 };

@@ -2,6 +2,7 @@
 #include "KamataEngine.h"
 #include "Player.h"
 #include "Enemy.h"
+#include "ShieldEnemy.h"
 #include "Skydome.h"
 #include "MapChipField.h"
 #include "vector"
@@ -11,6 +12,7 @@
 #include "DeathParticles.h"
 #include "Fade.h"
 #include "HitEffect.h"
+#include "GuardEffect.h"
 
 class GameScene {
 public:
@@ -44,6 +46,11 @@ private:
 	std::list<Enemy*> enemies_;
 	KamataEngine::Model* enemyModel_ = nullptr;
 
+	// tate敵キャラクター
+	int shieldEnemyMax_ = 1;
+	std::list<ShieldEnemy*> shieldEnemies_;
+	KamataEngine::Model* shieldEnemyModel_ = nullptr;
+
 	// カメラ
 	CameraController* cameraController_ = nullptr;
 
@@ -64,6 +71,8 @@ private:
 
 	KamataEngine::Model* hitEffectModel_ = nullptr;
 	std::list<HitEffect*> hitEffects_;
+	KamataEngine::Model* guardEffectModel_ = nullptr;
+	std::list<GuardEffect*> guardEffects_;
 
 public:
 	GameScene();
@@ -87,4 +96,6 @@ public:
 	bool IsFinished() const { return isFinished_; }
 
 	void CreateHitEffect(const KamataEngine::Vector3& position);
+
+	void CreateGuardEffect(const KamataEngine::Vector3& position);
 };

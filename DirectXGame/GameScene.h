@@ -43,12 +43,11 @@ private:
 
 	// 敵キャラクター
 	int enemyMax_ = 3;
-	std::list<Enemy*> enemies_;
+	std::list<BaseEnemy*> enemies_;
 	KamataEngine::Model* enemyModel_ = nullptr;
 
 	// tate敵キャラクター
 	int shieldEnemyMax_ = 1;
-	std::list<ShieldEnemy*> shieldEnemies_;
 	KamataEngine::Model* shieldEnemyModel_ = nullptr;
 
 	// カメラ
@@ -69,10 +68,9 @@ private:
 
 	Fade* fade_ = nullptr;
 
+	std::list<BaseEffect*> baseEffects_;
 	KamataEngine::Model* hitEffectModel_ = nullptr;
-	std::list<HitEffect*> hitEffects_;
 	KamataEngine::Model* guardEffectModel_ = nullptr;
-	std::list<GuardEffect*> guardEffects_;
 
 public:
 	GameScene();

@@ -1,11 +1,12 @@
 #pragma once
 #include "KamataEngine.h"
 #include "helper.hpp"
+#include "BaseEnemy.h"
 
 class Player;
 class GameScene;
 
-class ShieldEnemy {
+class ShieldEnemy final : public BaseEnemy {
 public:
 	enum class Behavior {
 		kWalk,
@@ -50,15 +51,15 @@ private:
 public:
 	ShieldEnemy();
 	~ShieldEnemy();
-	void Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera, const KamataEngine::Vector3& position, GameScene* gameScene);
-	void Update();
-	void Draw();
+	void Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera, const KamataEngine::Vector3& position, GameScene* gameScene) override;
+	void Update() override;
+	void Draw() override;
 
-	AABB GetAABB();
+	AABB GetAABB() override;
 
-	void OnCollision(Player* player);
+	void OnCollision(Player* player) override;
 
-	bool IsDead() const { return isDead_; }
+	bool IsDead() const override { return isDead_; }
 
 	void BehaviorDeadUpdate();
 	void BehaviorDeadInitialize();
@@ -69,6 +70,6 @@ public:
 	void BehaviorKnockedUpdate();
 	void BehaviorKnockedInitialize();
 
-	bool IsCollisionDisabled() const { return isCollisionDiabled_; }
+	bool IsCollisionDisabled() const override { return isCollisionDiabled_; }
 };
 

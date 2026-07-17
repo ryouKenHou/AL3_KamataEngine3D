@@ -19,8 +19,7 @@ struct CollisionMapInfo {
 };
 
 class MapChipField;
-class Enemy;
-class ShieldEnemy;
+class BaseEnemy;
 
 class Player {
 public:
@@ -130,8 +129,7 @@ public:
 
 	void SetMapChipField(MapChipField* mapChipField) { mapChipField_ = mapChipField; } 
 
-	void OnCollision(Enemy* enemy);
-	void OnCollision(ShieldEnemy* enemy);
+	void OnCollision(BaseEnemy* enemy);
 
 	bool IsAlive() const { return !isDead_; }
 

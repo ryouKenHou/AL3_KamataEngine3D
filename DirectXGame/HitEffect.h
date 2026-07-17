@@ -2,8 +2,9 @@
 
 #include "KamataEngine.h"
 #include "helper.hpp"
+#include "BaseEffect.h"
 
-class HitEffect {
+class HitEffect final : public BaseEffect {
 private:
 	enum class Status {
 		kFadeIn,
@@ -23,13 +24,13 @@ private:
 
 
 public:
-	void Initialize(KamataEngine::Vector3 position);
-	void Update();
-	void Draw();
+	void Initialize(KamataEngine::Vector3 position) override;
+	void Update() override;
+	void Draw() override;
 
 	static void SetModel(KamataEngine::Model* model) { model_ = model; }	
 	static void SetCamera(KamataEngine::Camera* camera) { camera_ = camera; }
 	static HitEffect* Create(KamataEngine::Vector3 position);
 
-	bool IsFinished() const { return status_ == Status::kFinished; }
+	bool IsFinished() const override { return status_ == Status::kFinished; }
 };

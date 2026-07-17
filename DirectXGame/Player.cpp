@@ -533,19 +533,7 @@ AABB Player::GetAABB() {
 	return aabb;
 }
 
-void Player::OnCollision(Enemy* enemy) {
-
-	(void)enemy;
-	// velocity_ += Vector3(0, kJumpAcceleration, 0);
-
-	if (isAttacking_) {
-		return;
-	}
-
-	isDead_ = true;
-}
-
-void Player::OnCollision(ShieldEnemy* enemy) {
+void Player::OnCollision(BaseEnemy* enemy) {
 
 	(void)enemy;
 	// velocity_ += Vector3(0, kJumpAcceleration, 0);

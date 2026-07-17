@@ -1,7 +1,7 @@
-#include <Windows.h>
-#include "KamataEngine.h"
 #include "GameScene.h"
+#include "KamataEngine.h"
 #include "TitleScene.h"
+#include <Windows.h>
 
 using namespace KamataEngine;
 
@@ -37,6 +37,12 @@ void ChangeScene() {
 			gameScene = nullptr;
 			titleScene = new TitleScene();
 			titleScene->Initialize();
+		} else if (gameScene->IsReloadRequested()) {
+			// ゲームシーンをリロードする
+			delete gameScene;
+			gameScene = nullptr;
+			gameScene = new GameScene();
+			gameScene->Initialize();
 		}
 		break;
 	}
@@ -82,7 +88,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 	// ゲームループ
 	while (true) {
-		if (KamataEngine::Update()) {		
+		if (KamataEngine::Update()) {
 			break;
 		}
 
@@ -101,7 +107,6 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 		// ゲームシーンの描画
 		DrawScene();
-
 
 		// ImGuiの描画
 		imGuiManager->Draw();

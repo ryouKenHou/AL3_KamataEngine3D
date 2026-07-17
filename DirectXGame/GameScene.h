@@ -72,6 +72,8 @@ private:
 	KamataEngine::Model* hitEffectModel_ = nullptr;
 	KamataEngine::Model* guardEffectModel_ = nullptr;
 
+	bool reloadRequested_ = false;
+
 public:
 	GameScene();
 	~GameScene();
@@ -85,7 +87,7 @@ public:
 	// 描画
 	void Draw();
 
-	void GenerateBlocks();
+	void GenerateFieldObjects();
 
 	void CheckAllCollisions();
 
@@ -96,4 +98,6 @@ public:
 	void CreateHitEffect(const KamataEngine::Vector3& position);
 
 	void CreateGuardEffect(const KamataEngine::Vector3& position);
+
+	bool IsReloadRequested() const { return reloadRequested_; }
 };

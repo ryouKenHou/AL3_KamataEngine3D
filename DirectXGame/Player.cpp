@@ -119,7 +119,7 @@ void Player::MapCollisionUp(CollisionMapInfo* info) {
 	MapChipField::IndexSet indexSet;
 	indexSet = mapChipField_->GetMapChipIndexByPosition(positionsNew[kRightTop]);
 	mapchipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex - 1);
+	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex + 1);
 	if (mapchipType == MapChipType::kBlock && mapChipTypeNext != MapChipType::kBlock) {
 		hit = true;
 	}
@@ -127,7 +127,7 @@ void Player::MapCollisionUp(CollisionMapInfo* info) {
 	// 右上
 	indexSet = mapChipField_->GetMapChipIndexByPosition(positionsNew[kLeftTop]);
 	mapchipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex - 1);
+	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex + 1);
 	if (mapchipType == MapChipType::kBlock && mapChipTypeNext != MapChipType::kBlock) {
 		hit = true;
 	}
@@ -141,7 +141,7 @@ void Player::MapCollisionUp(CollisionMapInfo* info) {
 			float playerMoveY = rect.bottom - (worldTransform_.translation_.y) - (kHeight / 2.f + 0.1f);
 			info->moveValue.y = playerMoveY;
 			info->ceilingCollided = true;
-			// DebugText::GetInstance()->ConsolePrintf("ceiling collided\n");
+			DebugText::GetInstance()->ConsolePrintf("ceiling collided\n");
 		}
 	}
 }
@@ -173,8 +173,9 @@ void Player::MapCollisionDown(CollisionMapInfo* info) {
 	// 左下
 	MapChipField::IndexSet indexSet;
 	indexSet = mapChipField_->GetMapChipIndexByPosition(positionsNew[kLeftBottom]);
+	//DebugText::GetInstance()->ConsolePrintf("- checking|| position indexX:%d indexY:%d|| position x:%f y:%f\n", indexSet.xIndex, indexSet.yIndex, positionsNew[kLeftBottom].x, positionsNew[kLeftBottom].y);
 	mapchipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex + 1);
+	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex - 1);
 	if (mapchipType == MapChipType::kBlock && mapChipTypeNext != MapChipType::kBlock) {
 		hit = true;
 	}
@@ -182,8 +183,8 @@ void Player::MapCollisionDown(CollisionMapInfo* info) {
 	// 右下
 	indexSet = mapChipField_->GetMapChipIndexByPosition(positionsNew[kRightBottom]);
 	mapchipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex + 1);
-	if (mapchipType == MapChipType::kBlock && mapChipTypeNext != MapChipType::kBlock) {
+	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex - 1);
+	if (mapchipType == MapChipType::kBlock  && mapChipTypeNext != MapChipType::kBlock) {
 		hit = true;
 	}
 
@@ -195,9 +196,12 @@ void Player::MapCollisionDown(CollisionMapInfo* info) {
 			MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
 			float playerMoveY = rect.top - (worldTransform_.translation_.y) + (kHeight / 2.f);
 			info->moveValue.y = min(0.f, playerMoveY);
-			info->grounded = true;
 
+			info->grounded = true;
 			DebugText::GetInstance()->ConsolePrintf("Grounded\n");
+			/*DebugText::GetInstance()->ConsolePrintf("\n\n===================================\nGrounded, TopY:%f BottomY:%f\n", positionsNew[kLeftTop].y ,positionsNew[kLeftBottom].y );
+			DebugText::GetInstance()->ConsolePrintf("Grounded, position new indexX:%d indexY:%d\n", indexSet.xIndex, indexSet.yIndex);
+			DebugText::GetInstance()->ConsolePrintf("Grounded, translation X:%f Y:%f\n===================================\n\n", worldTransform_.translation_.x, worldTransform_.translation_.y);*/
 		}
 	}
 }
@@ -206,6 +210,7 @@ void Player::OnGroundCollided(const CollisionMapInfo& info) {
 	if (onGround_) {
 		if (velocity_.y > 0.f) {
 			onGround_ = false;
+			DebugText::GetInstance()->ConsolePrintf("Jumped\n");
 
 		} else {
 			std::array<Vector3, kNumCorner> positionsNew;
@@ -223,9 +228,9 @@ void Player::OnGroundCollided(const CollisionMapInfo& info) {
 			// 左下
 			MapChipField::IndexSet indexSet;
 			indexSet = mapChipField_->GetMapChipIndexByPosition(positionsNew[kLeftBottom] + gapY);
-			// DebugText::GetInstance()->ConsolePrintf("LeftBottom Index X:%d Y:%d\n", indexSet.xIndex, indexSet.yIndex);
+			//DebugText::GetInstance()->ConsolePrintf("- checking|| position indexX:%d indexY:%d|| position x:%f y:%f\n", indexSet.xIndex, indexSet.yIndex, positionsNew[kLeftBottom].x, positionsNew[kLeftBottom].y);
 			mapchipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-			mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex + 1);
+			mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex - 1);
 			if (mapchipType == MapChipType::kBlock && mapChipTypeNext != MapChipType::kBlock) {
 				hit = true;
 			}
@@ -233,13 +238,15 @@ void Player::OnGroundCollided(const CollisionMapInfo& info) {
 			// 右下
 			indexSet = mapChipField_->GetMapChipIndexByPosition(positionsNew[kRightBottom] + gapY);
 			mapchipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
-			mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex + 1);
+			mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex - 1);
 			if (mapchipType == MapChipType::kBlock && mapChipTypeNext != MapChipType::kBlock) {
 				hit = true;
 			}
 
 			if (!hit) {
+				//DebugText::GetInstance()->ConsolePrintf("lefted ground, translation X:%f Y:%f\n", worldTransform_.translation_.x, worldTransform_.translation_.y);
 				onGround_ = false;
+				DebugText::GetInstance()->ConsolePrintf("lefted ground\n");
 			}
 		}
 		canAttack_ = true;
@@ -248,8 +255,9 @@ void Player::OnGroundCollided(const CollisionMapInfo& info) {
 			velocity_.y = 0.f;
 			velocity_.x *= (1.f - kAttenuationLanding);
 			onGround_ = true;
-
 			canAttack_ = true;
+			DebugText::GetInstance()->ConsolePrintf("Landed\n");
+			//DebugText::GetInstance()->ConsolePrintf("Landed, translation X:%f Y:%f\n", worldTransform_.translation_.x, worldTransform_.translation_.y);
 		}
 	}
 }
@@ -296,6 +304,8 @@ void Player::MapCollisionLeft(CollisionMapInfo* info) {
 			float playerMoveX = rect.left - (worldTransform_.translation_.x) - (kWidth / 2.f + 0.05f);
 			info->moveValue.x = playerMoveX;
 			info->wallCollided = true;
+
+			//DebugText::GetInstance()->ConsolePrintf("left wall collided\n");
 		}
 	}
 }
@@ -336,6 +346,7 @@ void Player::MapCollisionRight(CollisionMapInfo* info) {
 			float playerMoveX = rect.right - (worldTransform_.translation_.x) + (kWidth / 2.f + 0.05f);
 			info->moveValue.x = playerMoveX;
 			info->wallCollided = true;
+			//DebugText::GetInstance()->ConsolePrintf("right wall collided\n");
 		}
 	}
 }
@@ -358,6 +369,8 @@ void Player::MapCollision(CollisionMapInfo* info) {
 }
 
 void Player::Update() {
+	//DebugText::GetInstance()->ConsolePrintf("translation X:%f Y:%f\n", worldTransform_.translation_.x, worldTransform_.translation_.y);
+	worldTransform_.translation_.z = -0.2f;
 
 	if (knockBackRequest_) {
 		behaviorRequest_ = Behavior::kNockBack;
@@ -398,20 +411,21 @@ void Player::Update() {
 	collisionInfo.moveValue = velocity_;
 	MapCollision(&collisionInfo);
 	// 移動処理
-	MoveAfterMapCollisionCheck(collisionInfo);
-	// 天井衝突時の処理
-	OnCeilingCollided(collisionInfo);
+	MoveAfterMapCollisionCheck(collisionInfo);	
 	// 地面衝突時の処理
 	OnGroundCollided(collisionInfo);
+	// 天井衝突時の処理
+	OnCeilingCollided(collisionInfo);
 	// 壁衝突時の処理
 	OnWallCollided(collisionInfo);
-
+	//worldTransform_.translation_.y = 0.09f;
 	// ワールドトランスフォームの更新
 	worldTransform_.matWorld_ = CreateAffineMatrix(worldTransform_.scale_, worldTransform_.rotation_, worldTransform_.translation_);
 	worldTransform_.TransferMatrix();
 }
 
 void Player::BehaviorKnockBackInitialize() {
+	worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};
 	knockBackParameter_ = 0;
 	velocity_.x = 0;
 }
@@ -500,6 +514,7 @@ void Player::BehaviorAttackUpdate() {
 
 void Player::BehaviorRootInitialize() {
 	// 初期化処理
+	worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};
 	isAttacking_ = false;
 }
 

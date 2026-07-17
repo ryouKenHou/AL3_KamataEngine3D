@@ -62,13 +62,13 @@ MapChipType MapChipField::GetMapChipTypeByIndex(uint32_t xIndex, uint32_t yIndex
 }
 
 KamataEngine::Vector3 MapChipField::GetMapChipPositionByIndex(uint32_t xIndex, uint32_t yIndex) {
-	return KamataEngine::Vector3{static_cast<float>(xIndex) * kBlockWidth, static_cast<float>(yIndex) * kBlockHeight, 0.0f};
+	return KamataEngine::Vector3{static_cast<float>(xIndex) * kBlockWidth, (kNumBlockVirtical - 1 - static_cast<float>(yIndex)) * kBlockHeight, 0.0f};
 }
 
  MapChipField::IndexSet MapChipField::GetMapChipIndexByPosition(const KamataEngine::Vector3& position) {
 	IndexSet indexSet;
 	indexSet.xIndex = static_cast<uint32_t>((position.x + kBlockWidth/2) / kBlockWidth);
-	indexSet.yIndex = static_cast<uint32_t>((position.y + kBlockHeight/2) / kBlockHeight);
+	indexSet.yIndex = kNumBlockVirtical - 1 - static_cast<uint32_t>(((position.y + kBlockHeight / 2) / kBlockHeight));
 	return indexSet;
 }
 

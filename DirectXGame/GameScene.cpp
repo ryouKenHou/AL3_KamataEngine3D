@@ -62,14 +62,18 @@ void GameScene::Initialize() {
 	// マップチップフィールドの生成と初期化
 	mapChipField_ = new MapChipField();
 	mapChipField_->LoadMapChipCsv("Resources/Blocks.csv");
-	Rect CameraMovableArea = {11.0f, (MapChipField::GetNumBlockHorizontal() - 11.f) * mapChipField_->GetBlockWidth(), 6.0f, MapChipField::GetNumBlockVirtical() * mapChipField_->GetBlockHeight()};
+	//Rect CameraMovableArea = {11.0f, (MapChipField::GetNumBlockHorizontal() - 11.f) * mapChipField_->GetBlockWidth(), 6.0f, (MapChipField::GetNumBlockVirtical()+1) * mapChipField_->GetBlockHeight()};
+	Rect CameraMovableArea = { 11.0f, (MapChipField::GetNumBlockHorizontal() - 11.f) * mapChipField_->GetBlockWidth(), -60.0f, (MapChipField::GetNumBlockVirtical() + 1) * mapChipField_->GetBlockHeight()};
+	
 	cameraController_->SetMovableArea(CameraMovableArea);
 
 	// プレイヤーの生成と初期化
 	player_ = new Player();
 	playerModel_ = Model::CreateFromOBJ("player", true);
 	playerAttackModel_ = Model::CreateFromOBJ("hit_effect", true);
-	Vector3 playerStartPosition = mapChipField_->GetMapChipPositionByIndex(1, 1);
+	Vector3 playerStartPosition = mapChipField_->GetMapChipPositionByIndex(1, 15);
+	//DebugText::GetInstance()->ConsolePrintf("!!!playerStartPosition X:%f Y:%f!!!\n", playerStartPosition.x, playerStartPosition.y);
+	
 	player_->Initialize(playerModel_, playerAttackModel_, cameraController_->GetCamera(), playerStartPosition);
 	player_->SetMapChipField(mapChipField_);
 

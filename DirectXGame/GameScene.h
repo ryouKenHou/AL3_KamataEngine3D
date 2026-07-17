@@ -10,6 +10,7 @@
 #include "list"
 #include "DeathParticles.h"
 #include "Fade.h"
+#include "HitEffect.h"
 
 class GameScene {
 public:
@@ -61,6 +62,9 @@ private:
 
 	Fade* fade_ = nullptr;
 
+	KamataEngine::Model* hitEffectModel_ = nullptr;
+	std::list<HitEffect*> hitEffects_;
+
 public:
 	GameScene();
 	~GameScene();
@@ -81,4 +85,6 @@ public:
 	void ChangePhase();
 
 	bool IsFinished() const { return isFinished_; }
+
+	void CreateHitEffect(const KamataEngine::Vector3& position);
 };

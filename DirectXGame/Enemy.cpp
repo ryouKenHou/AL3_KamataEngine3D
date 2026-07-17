@@ -5,14 +5,18 @@
 #include <algorithm>
 #include <array>
 #include <numbers>
+#include "GameScene.h"
 
 Enemy::Enemy() {}
 Enemy::~Enemy() {
 }
 
-void Enemy::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera, const KamataEngine::Vector3& position) {
+void Enemy::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera, const KamataEngine::Vector3& position, GameScene* gameScene) {
 	assert(model);
 	assert(camera);
+	assert(gameScene);
+
+	gameScene_ = gameScene;
 
 	// 3D モデルの生成
 	model_ = model;
@@ -118,6 +122,8 @@ AABB Enemy::GetAABB() {
 }
 
 void Enemy::OnCollision(Player* player) { 
-	(void)player;
 	behaviorRequest_ = Behavior::kDead;
+
+	KamataEngine::Vector3 effectPosition = (worldTransform_.translation_ + player->GetWorldPosition())/2.f;
+	gameScene_->CreateHitEffect(effectPosition);
 }

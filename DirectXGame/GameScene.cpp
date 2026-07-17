@@ -20,7 +20,7 @@ GameScene::~GameScene() {
 	for (BaseEnemy* enemy : enemies_) {
 		delete enemy;
 	}
-	enemies_.clear();	
+	enemies_.clear();
 
 	// デバッグカメラの解放
 	delete debugCamera_;
@@ -47,7 +47,6 @@ GameScene::~GameScene() {
 	baseEffects_.clear();
 	delete hitEffectModel_;
 	delete guardEffectModel_;
-
 }
 
 void GameScene::Initialize() {
@@ -62,45 +61,26 @@ void GameScene::Initialize() {
 	// マップチップフィールドの生成と初期化
 	mapChipField_ = new MapChipField();
 	mapChipField_->LoadMapChipCsv("Resources/Blocks.csv");
-	//Rect CameraMovableArea = {11.0f, (MapChipField::GetNumBlockHorizontal() - 11.f) * mapChipField_->GetBlockWidth(), 6.0f, (MapChipField::GetNumBlockVirtical()+1) * mapChipField_->GetBlockHeight()};
-	Rect CameraMovableArea = { 11.0f, (MapChipField::GetNumBlockHorizontal() - 11.f) * mapChipField_->GetBlockWidth(), -60.0f, (MapChipField::GetNumBlockVirtical() + 1) * mapChipField_->GetBlockHeight()};
-	
+	Rect CameraMovableArea = {
+	    11.0f, (MapChipField::GetNumBlockHorizontal() - 11.f) * mapChipField_->GetBlockWidth(), 6.0f, (MapChipField::GetNumBlockVirtical() + 1) * mapChipField_->GetBlockHeight()};
+	// Rect CameraMovableArea = { 11.0f, (MapChipField::GetNumBlockHorizontal() - 11.f) * mapChipField_->GetBlockWidth(), -60.0f, (MapChipField::GetNumBlockVirtical() + 1) *
+	// mapChipField_->GetBlockHeight()};
+
 	cameraController_->SetMovableArea(CameraMovableArea);
 
 	// プレイヤーの生成と初期化
-	player_ = new Player();
 	playerModel_ = Model::CreateFromOBJ("player", true);
 	playerAttackModel_ = Model::CreateFromOBJ("hit_effect", true);
-	Vector3 playerStartPosition = mapChipField_->GetMapChipPositionByIndex(1, 15);
-	//DebugText::GetInstance()->ConsolePrintf("!!!playerStartPosition X:%f Y:%f!!!\n", playerStartPosition.x, playerStartPosition.y);
-	
-	player_->Initialize(playerModel_, playerAttackModel_, cameraController_->GetCamera(), playerStartPosition);
-	player_->SetMapChipField(mapChipField_);
-
-	cameraController_->SetTarget(player_);
-	cameraController_->Reset();
 
 	// 敵キャラクターの生成と初期化
 	enemyModel_ = Model::CreateFromOBJ("enemy", true);
-	for (int i = 0; i < enemyMax_; ++i) {
-		Enemy* enemy = new Enemy();
-		Vector3 enemyStartPosition = mapChipField_->GetMapChipPositionByIndex(10 + i * 5, 1);
-		enemy->Initialize(enemyModel_, cameraController_->GetCamera(), enemyStartPosition, this);
-		enemies_.push_back(enemy);
-	}
 
 	// tate敵キャラクターの生成と初期化
 	shieldEnemyModel_ = Model::CreateFromOBJ("shieldEnemy", true);
-	for (int i = 0; i < shieldEnemyMax_; ++i) {
-		ShieldEnemy* shieldEnemy = new ShieldEnemy();
-		Vector3 shieldEnemyStartPosition = mapChipField_->GetMapChipPositionByIndex(15 + i * 5, 3);
-		shieldEnemy->Initialize(shieldEnemyModel_, cameraController_->GetCamera(), shieldEnemyStartPosition, this);
-		enemies_.push_back(shieldEnemy);
-	}
 
 	// ブロックモデルの生成と初期化
 	blockModel_ = Model::CreateFromOBJ("block", true);
-	GenerateBlocks();
+	GenerateFieldObjects();
 
 	//  デバッグカメラの生成と初期化
 	debugCamera_ = new DebugCamera(1280, 720);
@@ -119,7 +99,7 @@ void GameScene::Initialize() {
 	fade_->Initialize();
 	fade_->Start(Fade::Status::kFadeIn, 1.0f);
 
-	hitEffectModel_ = Model::CreateFromOBJ("particle", true); 
+	hitEffectModel_ = Model::CreateFromOBJ("particle", true);
 	HitEffect::SetCamera(cameraController_->GetCamera());
 	HitEffect::SetModel(hitEffectModel_);
 
@@ -369,7 +349,7 @@ void GameScene::Draw() {
 	fade_->Draw();
 }
 
-void GameScene::GenerateBlocks() {
+void GameScene::GenerateFieldObjects() {
 	const uint32_t kNumBlockHorizontal = mapChipField_->GetNumBlockHorizontal();
 	const uint32_t kNumBlockVertical = mapChipField_->GetNumBlockVirtical();
 
@@ -380,43 +360,74 @@ void GameScene::GenerateBlocks() {
 
 	for (uint32_t y = 0; y < kNumBlockVertical; ++y) {
 		for (uint32_t x = 0; x < kNumBlockHorizontal; ++x) {
-			if (mapChipField_->GetMapChipTypeByIndex(x, y) == MapChipType::kBlock) {
+			switch (mapChipField_->GetMapChipTypeByIndex(x, y)) {
+			case MapChipType::kBlock: {
 				WorldTransform* transform = new WorldTransform();
 				transform->Initialize();
 				blockWorldTransforms_[y][x] = transform;
 				blockWorldTransforms_[y][x]->translation_ = mapChipField_->GetMapChipPositionByIndex(x, y);
+				break;
+			}
+			case MapChipType::kPlayer: {
+				player_ = new Player();
+				Vector3 playerStartPosition = mapChipField_->GetMapChipPositionByIndex(x, y);
+				player_->Initialize(playerModel_, playerAttackModel_, cameraController_->GetCamera(), playerStartPosition);
+				player_->SetMapChipField(mapChipField_);
+
+				cameraController_->SetTarget(player_);
+				cameraController_->Reset();
+				break;
+			}
+			case MapChipType::kEnemy: {
+				switch (mapChipField_->GetMapChipSubIDByIndex(x, y)) {
+				case 0: {
+					Enemy* enemy = new Enemy();
+					Vector3 enemyStartPosition = mapChipField_->GetMapChipPositionByIndex(x, y);
+					enemy->Initialize(enemyModel_, cameraController_->GetCamera(), enemyStartPosition, this);
+					enemies_.push_back(enemy);
+					break;
+				}
+				case 1: {
+					ShieldEnemy* shieldEnemy = new ShieldEnemy();
+					Vector3 shieldEnemyStartPosition = mapChipField_->GetMapChipPositionByIndex(x, y);
+					shieldEnemy->Initialize(shieldEnemyModel_, cameraController_->GetCamera(), shieldEnemyStartPosition, this);
+					enemies_.push_back(shieldEnemy);
+					break;
+				}
+				}
+				}
+			}
 			}
 		}
 	}
-}
 
-void GameScene::CreateHitEffect(const KamataEngine::Vector3& position) {
-	HitEffect* hitEffect = HitEffect::Create(position);
-	baseEffects_.push_back(hitEffect);
-}
+	void GameScene::CreateHitEffect(const KamataEngine::Vector3& position) {
+		HitEffect* hitEffect = HitEffect::Create(position);
+		baseEffects_.push_back(hitEffect);
+	}
 
-void GameScene::CreateGuardEffect(const KamataEngine::Vector3& position) {
-	GuardEffect* guardEffect = GuardEffect::Create(position);
-	baseEffects_.push_back(guardEffect);
-}
+	void GameScene::CreateGuardEffect(const KamataEngine::Vector3& position) {
+		GuardEffect* guardEffect = GuardEffect::Create(position);
+		baseEffects_.push_back(guardEffect);
+	}
 
-void GameScene::CheckAllCollisions() {
+	void GameScene::CheckAllCollisions() {
 #pragma region Player vs MapChipField
-	{
-		AABB aabb1, aabb2;
-		aabb1 = player_->GetAABB();
+		{
+			AABB aabb1, aabb2;
+			aabb1 = player_->GetAABB();
 
-		for (BaseEnemy* e : enemies_) {
-			if (e->IsCollisionDisabled()) {
-				continue;
-			}
-			aabb2 = e->GetAABB();
-			if (AABB::CheckAABBCollision(aabb1, aabb2)) {
-				player_->OnCollision(e);
-				e->OnCollision(player_);
+			for (BaseEnemy* e : enemies_) {
+				if (e->IsCollisionDisabled()) {
+					continue;
+				}
+				aabb2 = e->GetAABB();
+				if (AABB::CheckAABBCollision(aabb1, aabb2)) {
+					player_->OnCollision(e);
+					e->OnCollision(player_);
+				}
 			}
 		}
-	}
 #pragma endregion
 
 #pragma region Player vs items
@@ -426,4 +437,4 @@ void GameScene::CheckAllCollisions() {
 #pragma region PlayerBullet vs enemies
 
 #pragma endregion
-}
+	}

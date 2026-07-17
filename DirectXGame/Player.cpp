@@ -425,6 +425,7 @@ void Player::Update() {
 }
 
 void Player::BehaviorKnockBackInitialize() {
+	worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};
 	knockBackParameter_ = 0;
 	velocity_.x = 0;
 }
@@ -513,6 +514,7 @@ void Player::BehaviorAttackUpdate() {
 
 void Player::BehaviorRootInitialize() {
 	// 初期化処理
+	worldTransform_.scale_ = {1.0f, 1.0f, 1.0f};
 	isAttacking_ = false;
 }
 

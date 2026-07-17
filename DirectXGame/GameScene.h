@@ -85,7 +85,7 @@ public:
 	// 描画
 	void Draw();
 
-	void GenerateBlocks();
+	void GenerateFieldObjects();
 
 	void CheckAllCollisions();
 

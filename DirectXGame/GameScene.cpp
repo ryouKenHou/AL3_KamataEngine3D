@@ -22,6 +22,12 @@ GameScene::~GameScene() {
 	}
 	enemies_.clear();	
 
+	// 敵キャラクターの解放
+	for (ShieldEnemy* enemy : shieldEnemies_) {
+		delete enemy;
+	}
+	shieldEnemies_.clear();	
+
 	// デバッグカメラの解放
 	delete debugCamera_;
 
@@ -46,6 +52,13 @@ GameScene::~GameScene() {
 	}
 	hitEffects_.clear();
 	delete hitEffectModel_;
+
+	// ガードエフェクトの解放
+	for (GuardEffect* guardEffect : guardEffects_) {
+		delete guardEffect;
+	}
+	guardEffects_.clear();
+	delete guardEffectModel_;
 
 }
 
@@ -84,6 +97,15 @@ void GameScene::Initialize() {
 		enemies_.push_back(enemy);
 	}
 
+	// tate敵キャラクターの生成と初期化
+	shieldEnemyModel_ = Model::CreateFromOBJ("shieldEnemy", true);
+	for (int i = 0; i < shieldEnemyMax_; ++i) {
+		ShieldEnemy* shieldEnemy = new ShieldEnemy();
+		Vector3 shieldEnemyStartPosition = mapChipField_->GetMapChipPositionByIndex(15 + i * 5, 3);
+		shieldEnemy->Initialize(shieldEnemyModel_, cameraController_->GetCamera(), shieldEnemyStartPosition, this);
+		shieldEnemies_.push_back(shieldEnemy);
+	}
+
 	// ブロックモデルの生成と初期化
 	blockModel_ = Model::CreateFromOBJ("block", true);
 	GenerateBlocks();
@@ -108,6 +130,10 @@ void GameScene::Initialize() {
 	hitEffectModel_ = Model::CreateFromOBJ("particle", true); 
 	HitEffect::SetCamera(cameraController_->GetCamera());
 	HitEffect::SetModel(hitEffectModel_);
+
+	guardEffectModel_ = Model::CreateFromOBJ("ring", true);
+	GuardEffect::SetCamera(cameraController_->GetCamera());
+	GuardEffect::SetModel(guardEffectModel_);
 }
 
 void GameScene::Update() {
@@ -163,9 +189,19 @@ void GameScene::Update() {
 			enemy->Update();
 		}
 
+		// tate敵キャラクターの更新
+		for (ShieldEnemy* shieldEnemy : shieldEnemies_) {
+			shieldEnemy->Update();
+		}
+
 		// ヒットエフェクトの更新
 		for (HitEffect* hitEffect : hitEffects_) {
 			hitEffect->Update();
+		}
+
+		// ガードエフェクトの更新
+		for (GuardEffect* guardEffect : guardEffects_) {
+			guardEffect->Update();
 		}
 
 		CheckAllCollisions();
@@ -178,9 +214,25 @@ void GameScene::Update() {
 			return false;
 		});
 
+		shieldEnemies_.remove_if([](ShieldEnemy* shieldEnemy) {
+			if (shieldEnemy->IsDead()) {
+				delete shieldEnemy;
+				return true;
+			}
+			return false;
+		});
+
 		hitEffects_.remove_if([](HitEffect* hitEffect) {
 			if (hitEffect->IsFinished()) {
 				delete hitEffect;
+				return true;
+			}
+			return false;
+		});
+
+		guardEffects_.remove_if([](GuardEffect* guardEffect) {
+			if (guardEffect->IsFinished()) {
+				delete guardEffect;
 				return true;
 			}
 			return false;
@@ -241,6 +293,37 @@ void GameScene::Update() {
 		for (Enemy* enemy : enemies_) {
 			enemy->Update();
 		}
+
+		// tate敵キャラクターの更新
+		for (ShieldEnemy* shieldEnemy : shieldEnemies_) {
+			shieldEnemy->Update();
+		}
+
+		// ヒットエフェクトの更新
+		for (HitEffect* hitEffect : hitEffects_) {
+			hitEffect->Update();
+		}
+
+		// ガードエフェクトの更新
+		for (GuardEffect* guardEffect : guardEffects_) {
+			guardEffect->Update();
+		}
+
+		hitEffects_.remove_if([](HitEffect* hitEffect) {
+			if (hitEffect->IsFinished()) {
+				delete hitEffect;
+				return true;
+			}
+			return false;
+		});
+
+		guardEffects_.remove_if([](GuardEffect* guardEffect) {
+			if (guardEffect->IsFinished()) {
+				delete guardEffect;
+				return true;
+			}
+			return false;
+		});
 
 		// デスパーティクルの更新
 		if (deathParticles_) {
@@ -327,9 +410,19 @@ void GameScene::Draw() {
 		enemy->Draw();
 	}
 
+	// tate敵キャラクターの描画
+	for (ShieldEnemy* shieldEnemy : shieldEnemies_) {
+		shieldEnemy->Draw();
+	}
+
 	// ヒットエフェクトの描画
 	for (HitEffect* hitEffect : hitEffects_) {
 		hitEffect->Draw();
+	}
+
+	// ガードエフェクトの描画
+	for (GuardEffect* guardEffect : guardEffects_) {
+		guardEffect->Draw();
 	}
 
 	//  3Dモデル描画後処理
@@ -364,6 +457,11 @@ void GameScene::CreateHitEffect(const KamataEngine::Vector3& position) {
 	hitEffects_.push_back(hitEffect);
 }
 
+void GameScene::CreateGuardEffect(const KamataEngine::Vector3& position) {
+	GuardEffect* guardEffect = GuardEffect::Create(position);
+	guardEffects_.push_back(guardEffect);
+}
+
 void GameScene::CheckAllCollisions() {
 #pragma region Player vs MapChipField
 	{
@@ -371,6 +469,17 @@ void GameScene::CheckAllCollisions() {
 		aabb1 = player_->GetAABB();
 
 		for (Enemy* e : enemies_) {
+			if (e->IsCollisionDisabled()) {
+				continue;
+			}
+			aabb2 = e->GetAABB();
+			if (AABB::CheckAABBCollision(aabb1, aabb2)) {
+				player_->OnCollision(e);
+				e->OnCollision(player_);
+			}
+		}
+
+		for (ShieldEnemy* e : shieldEnemies_) {
 			if (e->IsCollisionDisabled()) {
 				continue;
 			}

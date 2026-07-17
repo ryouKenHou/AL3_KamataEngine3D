@@ -121,7 +121,7 @@ void Player::MapCollisionUp(CollisionMapInfo* info) {
 	mapchipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
 	mapChipTypeNext = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex + 1);
 	if (mapchipType == MapChipType::kBlock && mapChipTypeNext != MapChipType::kBlock) {
-		//hit = true;
+		hit = true;
 	}
 
 	// 右上
@@ -139,9 +139,9 @@ void Player::MapCollisionUp(CollisionMapInfo* info) {
 		if (indexSetNow.yIndex != indexSet.yIndex) {
 			MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
 			float playerMoveY = rect.bottom - (worldTransform_.translation_.y) - (kHeight / 2.f + 0.1f);
-			info->moveValue.y = max(0.f,playerMoveY);
+			info->moveValue.y = playerMoveY;
 			info->ceilingCollided = true;
-			//DebugText::GetInstance()->ConsolePrintf("ceiling collided\n");
+			DebugText::GetInstance()->ConsolePrintf("ceiling collided\n");
 		}
 	}
 }
@@ -198,6 +198,7 @@ void Player::MapCollisionDown(CollisionMapInfo* info) {
 			info->moveValue.y = min(0.f, playerMoveY);
 
 			info->grounded = true;
+			DebugText::GetInstance()->ConsolePrintf("Grounded\n");
 			/*DebugText::GetInstance()->ConsolePrintf("\n\n===================================\nGrounded, TopY:%f BottomY:%f\n", positionsNew[kLeftTop].y ,positionsNew[kLeftBottom].y );
 			DebugText::GetInstance()->ConsolePrintf("Grounded, position new indexX:%d indexY:%d\n", indexSet.xIndex, indexSet.yIndex);
 			DebugText::GetInstance()->ConsolePrintf("Grounded, translation X:%f Y:%f\n===================================\n\n", worldTransform_.translation_.x, worldTransform_.translation_.y);*/
@@ -209,6 +210,7 @@ void Player::OnGroundCollided(const CollisionMapInfo& info) {
 	if (onGround_) {
 		if (velocity_.y > 0.f) {
 			onGround_ = false;
+			DebugText::GetInstance()->ConsolePrintf("Jumped\n");
 
 		} else {
 			std::array<Vector3, kNumCorner> positionsNew;
@@ -244,6 +246,7 @@ void Player::OnGroundCollided(const CollisionMapInfo& info) {
 			if (!hit) {
 				//DebugText::GetInstance()->ConsolePrintf("lefted ground, translation X:%f Y:%f\n", worldTransform_.translation_.x, worldTransform_.translation_.y);
 				onGround_ = false;
+				DebugText::GetInstance()->ConsolePrintf("lefted ground\n");
 			}
 		}
 		canAttack_ = true;
@@ -253,7 +256,7 @@ void Player::OnGroundCollided(const CollisionMapInfo& info) {
 			velocity_.x *= (1.f - kAttenuationLanding);
 			onGround_ = true;
 			canAttack_ = true;
-
+			DebugText::GetInstance()->ConsolePrintf("Landed\n");
 			//DebugText::GetInstance()->ConsolePrintf("Landed, translation X:%f Y:%f\n", worldTransform_.translation_.x, worldTransform_.translation_.y);
 		}
 	}
@@ -408,11 +411,11 @@ void Player::Update() {
 	collisionInfo.moveValue = velocity_;
 	MapCollision(&collisionInfo);
 	// 移動処理
-	MoveAfterMapCollisionCheck(collisionInfo);
-	// 天井衝突時の処理
-	OnCeilingCollided(collisionInfo);
+	MoveAfterMapCollisionCheck(collisionInfo);	
 	// 地面衝突時の処理
 	OnGroundCollided(collisionInfo);
+	// 天井衝突時の処理
+	OnCeilingCollided(collisionInfo);
 	// 壁衝突時の処理
 	OnWallCollided(collisionInfo);
 	//worldTransform_.translation_.y = 0.09f;

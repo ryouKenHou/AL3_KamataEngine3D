@@ -108,8 +108,7 @@ void GameScene::Initialize() {
 	GuardEffect::SetModel(guardEffectModel_);
 }
 
-void GameScene::Update() {
-
+void GameScene::ChangePhase() {
 	switch (phase_) {
 	case Phase::kFadeIn: {
 		if (fade_->IsFinished()) {
@@ -307,6 +306,22 @@ void GameScene::Update() {
 		break;
 	}
 	}
+}
+
+void GameScene::Update() {
+
+	#ifdef _DEBUG
+	ImGui::Begin("GameScene Debug");
+
+	if (ImGui::Button("Reload GameScene")) {
+		reloadRequested_ = true;
+	}	
+
+	ImGui::End();
+	#endif
+
+	ChangePhase();
+	
 }
 
 void GameScene::Draw() {

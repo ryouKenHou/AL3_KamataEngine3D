@@ -3,6 +3,7 @@
 #include "helper.hpp"
 
 class Player;
+class GameScene;
 
 class Enemy {
 public:
@@ -38,11 +39,12 @@ private:
 	Behavior behaviorRequest_ = Behavior::kUnknown;
 
 	bool isCollisionDiabled_ = false;
+	GameScene* gameScene_ = nullptr;
 
 public:
 	Enemy();
 	~Enemy();
-	void Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera, const KamataEngine::Vector3& position);
+	void Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera, const KamataEngine::Vector3& position, GameScene* gameScene);
 	void Update();
 	void Draw();
 

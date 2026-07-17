@@ -20,7 +20,7 @@ GameScene::~GameScene() {
 	for (Enemy* enemy : enemies_) {
 		delete enemy;
 	}
-	enemies_.clear();
+	enemies_.clear();	
 
 	// デバッグカメラの解放
 	delete debugCamera_;
@@ -39,6 +39,14 @@ GameScene::~GameScene() {
 
 	// フェードの解放
 	delete fade_;
+
+	// ヒットエフェクトの解放
+	for (HitEffect* hitEffect : hitEffects_) {
+		delete hitEffect;
+	}
+	hitEffects_.clear();
+	delete hitEffectModel_;
+
 }
 
 void GameScene::Initialize() {
@@ -72,7 +80,7 @@ void GameScene::Initialize() {
 	for (int i = 0; i < enemyMax_; ++i) {
 		Enemy* enemy = new Enemy();
 		Vector3 enemyStartPosition = mapChipField_->GetMapChipPositionByIndex(10 + i * 5, 1);
-		enemy->Initialize(enemyModel_, cameraController_->GetCamera(), enemyStartPosition);
+		enemy->Initialize(enemyModel_, cameraController_->GetCamera(), enemyStartPosition, this);
 		enemies_.push_back(enemy);
 	}
 
@@ -96,6 +104,10 @@ void GameScene::Initialize() {
 	fade_ = new Fade();
 	fade_->Initialize();
 	fade_->Start(Fade::Status::kFadeIn, 1.0f);
+
+	hitEffectModel_ = Model::CreateFromOBJ("particle", true); 
+	HitEffect::SetCamera(cameraController_->GetCamera());
+	HitEffect::SetModel(hitEffectModel_);
 }
 
 void GameScene::Update() {
@@ -151,11 +163,24 @@ void GameScene::Update() {
 			enemy->Update();
 		}
 
+		// ヒットエフェクトの更新
+		for (HitEffect* hitEffect : hitEffects_) {
+			hitEffect->Update();
+		}
+
 		CheckAllCollisions();
 
 		enemies_.remove_if([](Enemy* enemy) {
 			if (enemy->IsDead()) {
 				delete enemy;
+				return true;
+			}
+			return false;
+		});
+
+		hitEffects_.remove_if([](HitEffect* hitEffect) {
+			if (hitEffect->IsFinished()) {
+				delete hitEffect;
 				return true;
 			}
 			return false;
@@ -302,6 +327,11 @@ void GameScene::Draw() {
 		enemy->Draw();
 	}
 
+	// ヒットエフェクトの描画
+	for (HitEffect* hitEffect : hitEffects_) {
+		hitEffect->Draw();
+	}
+
 	//  3Dモデル描画後処理
 	Model::PostDraw();
 
@@ -327,6 +357,11 @@ void GameScene::GenerateBlocks() {
 			}
 		}
 	}
+}
+
+void GameScene::CreateHitEffect(const KamataEngine::Vector3& position) {
+	HitEffect* hitEffect = HitEffect::Create(position);
+	hitEffects_.push_back(hitEffect);
 }
 
 void GameScene::CheckAllCollisions() {

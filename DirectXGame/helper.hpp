@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <KamataEngine.h>
 #include <algorithm>
+#include <random>
 enum class LRDirection {
 	kRight,
 	kLeft,
@@ -30,6 +31,9 @@ inline KamataEngine::Vector3 operator+=(KamataEngine::Vector3& v1, const KamataE
 
 inline KamataEngine::Vector3 operator*(const KamataEngine::Vector3& v, float scalar) {
 	return {v.x * scalar, v.y * scalar, v.z * scalar}; }
+
+inline KamataEngine::Vector3 operator/(const KamataEngine::Vector3& v, float scalar) { 
+	return {v.x / scalar, v.y / scalar, v.z / scalar}; }
 
 inline KamataEngine::Vector3 Lerp(const KamataEngine::Vector3& start, const KamataEngine::Vector3& end, float t) {
 	return {
@@ -76,4 +80,20 @@ inline float EaseIn(float start, float end, float t) {
 	t = std::clamp(t, 0.0f, 1.0f);
 	return start + (end - start) * static_cast<float>(std::pow(t, 3));
 }
+
+class Random {
+	std::mt19937_64 engine_;
+	std::random_device seedGenerator;
+
+	public:
+	void Initialize() {
+		engine_.seed(seedGenerator()); 
+	}
+
+	float GetRandomFloat(float min, float max) {
+		std::uniform_real_distribution<float> distribution(min, max);
+		return distribution(engine_);
+	}
+
+};
 
